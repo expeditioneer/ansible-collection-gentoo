@@ -1,0 +1,47 @@
+---
+
+- name: Add keywords for sssd required packages
+  ansible.builtin.template:
+    src: sssd.accept_keywords.aarch64.j2
+    dest: /etc/portage/package.accept_keywords/20-sssd
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  when:
+    - ansible_architecture == "aarch64"
+
+- name: Configure use flags
+  ansible.builtin.template:
+    src: sssd.useflags.j2
+    dest: /etc/portage/package.use/20-sssd
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+- name: install System Security Services Daemon
+  expeditioneer.gentoo.package:
+    package: sssd
+    state: present
+  become: true
+
+- name: create /etc/sssd/sssd.conf file
+  ansible.builtin.template:
+    src: sssd/sssd.conf.j2
+    dest: /etc/sssd/sssd.conf
+    owner: root
+    group: root
+    mode: 0600
+  become: true
+
+- name: remove obsolete sssd-example.conf file
+  ansible.builtin.file:
+    name: /etc/sssd/sssd-example.conf
+    state: absent
+  become: true
+
+# create pam.d/system-auth
+
+#8. Start or restart the sssd service.
+#sudo service sssd restart

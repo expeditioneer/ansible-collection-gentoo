@@ -1,0 +1,57 @@
+#
+# {{ ansible_managed }}
+#
+
+[kdcdefaults]
+  kdc_listen = 88
+  kdc_tcp_listen = 88
+
+[realms]
+  {{ domain | upper }} = {
+    database_module = openldap_ldapconf
+    kadmind_port = 749
+    max_life = 12h 0m 0s
+    max_renewable_life = 7d 0h 0m 0s
+    master_key_type = aes256-cts-hmac-sha1-96
+  }
+
+[logging]
+  kdc = FILE:/var/log/krb5/kdc.log
+  admin_server = FILE:/var/log/krb5/kadmin.log
+
+[appdefaults]
+  pam = {
+    ticket_lifetime = 1d
+    renew_lifetime = 1d
+    forwardable = true
+    proxiable = false
+    retain_after_close = false
+    minimum_uid = 0
+    try_first_pass = true
+  }
+
+[libdefaults]
+  default_tkt_enctypes = {{ kerberos.default_tkt_enctypes | join(' ') }}
+  default_tgs_enctypes = {{ kerberos.default_tgs_enctypes | join(' ') }}
+  permitted_enctypes = {{ kerberos.supported_encryption_types | join(' ') }}
+
+[dbmodules]
+  openldap_ldapconf = {
+    db_library = kldap
+    ldap_kerberos_container_dn = cn=kerberos,ou=services,dc={{ domain | lower | split('.') | join(',dc=') }}
+
+    {# if either of these is false, then the ldap_kdc_dn needs to have write access as explained above #}
+    disable_last_success = true
+    disable_lockout = true
+    ldap_conns_per_server = 5
+    ldap_servers = ldapi:///
+
+    {# this object needs to have read rights on the realm container, principal container and realm sub-trees #}
+    ldap_kdc_dn = "uid=kdc,ou=kerberos,ou=services,dc={{ domain | lower | split('.') | join(',dc=') }}"
+
+    {# this object needs to have read and write rights on the realm container, principal container and realm sub-trees #}
+    ldap_kadmind_dn = "uid=kadmin,ou=kerberos,ou=services,dc={{ domain | lower | split('.') | join(',dc=') }}"
+
+    {# this file will be used to store plaintext passwords used to connect to the LDAP server #}
+    ldap_service_password_file = /var/lib/krb5kdc/service.keyfile
+  }

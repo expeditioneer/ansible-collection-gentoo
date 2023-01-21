@@ -1,0 +1,14 @@
+---
+
+- name: Restart bind name server
+  ansible.builtin.systemd:
+    name: named
+    state: restarted
+  become: true
+
+- name: Reload zone information
+  ansible.builtin.shell: |
+    rndc freeze
+    rndc reload
+    rndc thaw
+  become: true

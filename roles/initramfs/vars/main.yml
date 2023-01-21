@@ -1,0 +1,3 @@
+---
+
+dracut_split_configuration_dir: /etc/dracut.conf.d

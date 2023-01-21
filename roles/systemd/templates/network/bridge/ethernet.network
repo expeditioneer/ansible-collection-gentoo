@@ -1,0 +1,10 @@
+#
+# {{ ansible_managed }}
+#
+
+[Match]
+Name=enp0s31f6
+
+[Network]
+Bridge=br0
+

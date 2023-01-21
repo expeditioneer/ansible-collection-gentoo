@@ -1,0 +1,7 @@
+---
+
+# TODO: migrate to SHELL - seems necessary here
+- name: update ca-certificates trust
+  ansible.builtin.command:
+    cmd: update-ca-certificates
+  become: true

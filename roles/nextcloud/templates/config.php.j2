@@ -1,0 +1,36 @@
+<?php
+
+/**
+ * {{ ansible_managed }}
+ */
+
+$CONFIG = array (
+  'instanceid' => 'ocu0b83i9cq1',
+  'passwordsalt' => 'alCfhnH7yUozWfMlNTOp03vgIWLYj6',
+  'secret' => 'g8rcb6oVkn5H9pyYgx0Ey6xLz98IElO77Oh4QbanF1Agw7gC',
+  'trusted_domains' => [
+    'nextcloud.home.arpa',
+  ],
+  'datadirectory' => '/usr/share/webapps/nextcloud/24.0.7/htdocs/data',
+  'dbtype' => 'pgsql',
+  'version' => '24.0.7.1',
+  'overwrite.cli.url' => 'https://carbon.home.arpa',
+  'dbname' => 'nextcloud',
+  'dbhost' => 'localhost:5432',
+  'dbport' => '',
+  'dbtableprefix' => 'oc_',
+  'dbuser' => 'nextcloud',
+  'dbpassword' => 'Pjpx054BnyIcmdaH99hI26wahAEiNonn',
+  'installed' => true,
+  'upgrade.disable-web' => 'true',
+  'default_phone_region' => 'DE',
+  'memcache.local' => '\OC\Memcache\Redis',
+  'memcache.distributed' => '\OC\Memcache\Redis',
+  'redis' => [
+       'host'     => '/run/redis/redis.sock',
+       'port'     => 0,
+       'dbindex'  => 0,
+       'password' => '{{ redis_password }}',
+       'timeout'  => 1.5,
+  ],
+);

@@ -1,0 +1,6 @@
+---
+
+libretuya_configuration_dir: /etc/libretuya
+libretuya_install_dir: /usr/local/libretuya
+libretuya_nginx_configuration_dir: '{{ nginx_configuration_directory }}/libretuya'
+libretuya_run_directory: /run/libretuya

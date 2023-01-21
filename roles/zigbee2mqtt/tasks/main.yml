@@ -1,0 +1,182 @@
+---
+
+- name: Assert that necessary variables are defined
+  ansible.builtin.assert:
+    that:
+      - zigbee2mqtt_configuration_dir is defined
+      - zigbee2mqtt_install_dir is defined
+      - zigbee2mqtt_log_dir is defined
+      - zigbee2mqtt_nginx_configuration_dir is defined
+      - zigbee2mqtt_state_dir is defined
+      - zigbee2mqtt_version is defined
+      - zigbee2mqtt_username is defined
+      - zigbee2mqtt_password is defined
+      - zigbee2mqtt_mqtt_username is defined
+      - zigbee2mqtt_mqtt_password is defined
+      - nginx_configuration_directory is defined
+
+# see https://www.zigbee2mqtt.io/guide/installation/01_linux.html
+
+- name: Create service user zigbee2mqtt
+  ansible.builtin.user:
+    name: zigbee2mqtt
+    comment: System user; zigbee2mqtt
+    home: '{{ zigbee2mqtt_state_dir }}'
+    shell: /sbin/nologin
+    system: yes
+    groups: dialout
+  become: true
+
+- name: Install JavaScript runtime built on Chrome's V8 JavaScript engine
+  expeditioneer.gentoo.portage:
+    package: net-libs/nodejs
+  become: true
+
+- name: Create necessary directories for zigbee2mqtt
+  ansible.builtin.file:
+    path: '{{ directory.path }}'
+    state: directory
+    owner: "{{ directory.owner | default('root') }}"
+    group: "{{ directory.group | default('zigbee2mqtt') }}"
+    mode: "{{ directory.mode | default('0750') }}"
+  loop:
+    - { path: '{{ zigbee2mqtt_configuration_dir }}' }
+    - { path: '{{ zigbee2mqtt_state_dir }}', mode: 0770 }
+    - { path: '{{ zigbee2mqtt_nginx_configuration_dir }}', owner: nginx, group: nginx }
+  loop_control:
+    loop_var: directory
+
+- name: Create configuration file
+  ansible.builtin.template:
+    src: configuration.yaml.j2
+    dest: '{{ zigbee2mqtt_configuration_dir }}/configuration.yaml'
+    owner: root
+    group: zigbee2mqtt
+    mode: 0660
+    force: no
+  become: true
+  notify: restart zigbee2mqtt service
+
+- name: Check if zigbee2mqtt version {{ zigbee2mqtt_version }} is already installed
+  ansible.builtin.stat:
+    path: '{{ zigbee2mqtt_install_dir }}-{{ zigbee2mqtt_version }}'
+  register: zigbee2mqtt_directory
+
+- block:
+    - name: 'Install zigbee2mqtt version {{ zigbee2mqtt_version }} from github'
+      ansible.builtin.unarchive:
+        src: 'https://github.com/Koenkk/zigbee2mqtt/archive/refs/tags/{{ zigbee2mqtt_version }}.tar.gz'
+        dest: /opt
+        owner: zigbee2mqtt
+        group: zigbee2mqtt
+        mode: 0750
+        remote_src: true
+      become: true
+
+    - name: Create symlink for version-less access of installed software
+      ansible.builtin.file:
+        src: '{{ zigbee2mqtt_install_dir }}-{{ zigbee2mqtt_version }}'
+        dest: '{{ zigbee2mqtt_install_dir }}'
+        state: link
+      become: true
+
+    - name: Install node.js package dependencies for zigbee2mqtt
+      ansible.builtin.command:
+        cmd: npm ci
+      args:
+        chdir: '{{ zigbee2mqtt_install_dir }}'
+      become: true
+      become_user: zigbee2mqtt
+
+    - name: 'Remove obsolete {{ zigbee2mqtt_install_dir }}/data/log directory'
+      ansible.builtin.file:
+        path: '{{ zigbee2mqtt_install_dir }}/data/log'
+        state: absent
+      become: true
+
+    - name: Create symlink for configuration file
+      ansible.builtin.file:
+        src: ../../../etc/zigbee2mqtt/configuration.yaml
+        dest: '{{ zigbee2mqtt_install_dir }}/data/configuration.yaml'
+        state: link
+        force: true
+      become: true
+
+    - name: Create symlinks for state files
+      ansible.builtin.file:
+        src: '../../../var/lib/zigbee2mqtt/{{ item }}'
+        dest: '{{ zigbee2mqtt_install_dir }}/data/{{ item }}'
+        state: link
+        force: true
+      become: true
+      loop:
+        - coordinator_backup.json
+        - state.json
+
+    - name: 'Correct permissions on {{ zigbee2mqtt_install_dir }}'
+      ansible.builtin.command:
+        cmd: find {{ zigbee2mqtt_install_dir }} -type d -exec chmod -R o-7 {} \;
+      args:
+        chdir: '{{ zigbee2mqtt_install_dir }}'
+      become: true
+  when:
+    - not zigbee2mqtt_directory.stat.exists
+
+- name: Create systemd service for zigbee2mqtt
+  ansible.builtin.template:
+    src: zigbee2mqtt.service.j2
+    dest: /etc/systemd/system/zigbee2mqtt.service
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  notify: restart zigbee2mqtt service
+
+- name: Start and enable zigbee2mqtt.service
+  ansible.builtin.systemd:
+    name: zigbee2mqtt
+    state: started
+    enabled: true
+  become: true
+
+- name: Create nginx configuration for zigbee2mqtt
+  ansible.builtin.template:
+    src: nginx.zigbee2mqtt.conf.j2
+    dest: '{{ nginx_configuration_directory }}/zigbee2mqtt.conf'
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  notify: restart NGINX
+
+- name: Create nginx configuration snippets for zigbee2mqtt
+  ansible.builtin.template:
+    src: '{{ item.src }}'
+    dest: '{{ zigbee2mqtt_nginx_configuration_dir }}/{{ item.dest }}'
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  notify: restart NGINX
+  loop:
+    - { src: nginx.zigbee2mqtt.locations.conf.j2, dest: locations.conf }
+    - { src: nginx.zigbee2mqtt.basic_auth_user_file.j2, dest: basic_auth_user_file }
+
+- name: Update zigbee2mqtt HTTPS certificate
+  ansible.builtin.copy:
+    src: '{{ file.name }}'
+    dest: "/etc/ssl/nginx/{{ file.name | split('/') | last }}"
+    owner: root
+    group: root
+    mode: '{{ file.mode }}'
+  become: true
+  notify: restart NGINX
+  loop:
+    - { name: '{{ zigbee2mqtt_https_certificate_file }}',  mode: '0644' }
+    - { name: '{{ zigbee2mqtt_https_key_file }}', mode: '0600' }
+  loop_control:
+    loop_var: file
+  when:
+    - zigbee2mqtt_https_certificate_file is defined
+    - zigbee2mqtt_https_key_file is defined
+

@@ -1,0 +1,166 @@
+---
+
+- name: assert that mandatory variables are defined
+  ansible.builtin.assert:
+    that:
+      - nextcloud_configuration_dir is defined
+      - nextcloud_install_dir is defined
+      - nextcloud_nginx_configuration_dir is defined
+
+- name: Add keywords for OpenLDAP required packages
+  ansible.builtin.template:
+    src: nextcloud.accept_keywords.j2
+    dest: /etc/portage/package.accept_keywords/60-nextcloud
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+- name: Configure use flags
+  ansible.builtin.template:
+    src: nextcloud.useflags.j2
+    dest: /etc/portage/package.use/60-nextcloud
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+- name: install Personal cloud that runs on your own server
+  expeditioneer.gentoo.portage:
+    package:
+      - www-apps/nextcloud
+      - dev-php/pecl-imagick
+      - dev-php/pecl-redis
+    update: yes
+  become: true
+
+- name: 'Change permissions for {{ nextcloud_install_dir }}'
+  ansible.builtin.file:
+    path: '{{ nextcloud_install_dir }}'
+    owner: nginx
+    group: root
+    recurse: yes
+  become: true
+
+# TODO: remove sensitive and custom data to playbook(!)
+- name: Create nextcloud configuration
+  ansible.builtin.template:
+    src: config.php.j2
+    dest: '{{ nextcloud_configuration_dir }}/config.php'
+    owner: nginx
+    group: root
+    mode: 0640
+  become: true
+#  notify: restart php-fpm
+
+- name: "adding existing user 'nginx' to group 'redis'"
+  ansible.builtin.user:
+    name: nginx
+    groups: redis
+    append: yes
+  become: true
+
+- name: 'Create {{ nextcloud_nginx_configuration_dir }} directory'
+  ansible.builtin.file:
+    path: '{{ nextcloud_nginx_configuration_dir }}'
+    state: directory
+    owner: nginx
+    group: nginx
+    mode: 0750
+
+- name: Create nginx configuration for nextcloud
+  ansible.builtin.template:
+    src: nginx.nextcloud.conf.j2
+    dest: '{{ nginx_configuration_directory }}/nextcloud.conf'
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  notify: restart NGINX
+
+- name: Create nginx configuration snippets for nextcloud
+  ansible.builtin.template:
+    src: '{{ item.src }}'
+    dest: '{{ nextcloud_nginx_configuration_dir }}/{{ item.dest }}'
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  notify: restart NGINX
+  loop:
+    - { src: nginx.nextcloud.upstream.conf.j2, dest: upstream.conf }
+    - { src: nginx.nextcloud.locations.conf.j2, dest: locations.conf }
+
+- name: Create systemd service and timer for nextcloud background processes
+  ansible.builtin.template:
+    src: '{{ item.src }}'
+    dest: '/etc/systemd/system/{{ item.dest }}'
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  loop:
+    - { src: nextcloud.systemd.service.j2, dest: nextcloud.service }
+    - { src: nextcloud.systemd.timer.j2, dest: nextcloud.timer }
+
+- name: Enable and start nextcloud background process timer
+  ansible.builtin.systemd:
+    name: nextcloud.timer
+    state: started
+    enabled: yes
+  become: true
+
+- name: Update nextcloud HTTPS certificate
+  ansible.builtin.copy:
+    src: '{{ file.name }}'
+    dest: "/etc/ssl/nginx/{{ file.name | split('/') | last }}"
+    owner: root
+    group: root
+    mode: '{{ file.mode }}'
+  become: true
+  notify: restart NGINX
+  loop:
+    - { name: '{{ nextcloud_https_certificate_file }}',  mode: '0644' }
+    - { name: '{{ nextcloud_https_key_file }}', mode: '0600' }
+  loop_control:
+    loop_var: file
+  when:
+    - nextcloud_https_certificate_file is defined
+    - nextcloud_https_key_file is defined
+
+- name: create necessary systemd override directories for php-fpm@8.1.service
+  ansible.builtin.file:
+    path: '/etc/systemd/system/php-fpm@8.1.service.d'
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  become: true
+
+
+- name: create systemd overrides for php-fpm@8.1.service
+  ansible.builtin.template:
+    src: php-fpm.service.override.j2
+    dest: '/etc/systemd/system/php-fpm@8.1.service.d/override.conf'
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+
+## systemctl enable auditd
+#/etc/portage/make.conf
+#/etc/portage/package.accept_keywords/ 05-kernel
+#/etc/portage/package.use/00-cpu-flags  05-kernel 10-selinux
+#/var/adm angelegt - Permissions ?
+#/var/spool lpd news uucp angelegt - Permissions?
+
+#PHP
+#----
+#/etc/php/fpm-php8.1/fpm.d/www.conf listen auf socket umgestellt
+## systemctl enable php-fpm@8.1.service
+#/etc/php/fpm-php8.1/php.ini memory limit auf 2048MB erhöht
+
+#OFFEN: Zugriff auf Socket für NGINX oder PHP-FPM(?)
+#siehe https://docs.nextcloud.com/server/latest/admin_manual/configuration_files/files_locking_transactional.html
+

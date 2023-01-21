@@ -1,0 +1,60 @@
+---
+
+- name: check that mandatory variables are defined
+  assert:
+    that:
+      - uwsgi is defined
+      - uwsgi.run_directory is defined
+
+- name:  Add keywords for uWSGI required packages
+  ansible.builtin.template:
+    src: uwsgi.accept_keywords.j2
+    dest: /etc/portage/package.accept_keywords/60-uwsgi
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+- name: uWSGI server for Python web applications - configure use flags
+  ansible.builtin.template:
+    src: uwsgi.useflags.j2
+    dest: /etc/portage/package.use/60-uwsgi
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+- name: uWSGI server for Python web applications - install package
+  ansible.builtin.package:
+    name: www-servers/uwsgi
+    changed_use: yes
+  become: true
+
+- name: uWSGI server for Python web applications - install packages for technical group
+  ansible.builtin.package:
+    name: acct-group/uwsgi
+    changed_use: yes
+  become: true
+
+- name: uWSGI server for Python web applications - create configuration for creation, deletion and cleaning of volatile and temporary files
+  ansible.builtin.template:
+    src: uwsgi.tmpfiles.j2
+    dest: /etc/tmpfiles.d/uwsgi.conf
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  notify:
+    - create volatile and temporary files and directory for uwsgi
+
+- name: uWSGI server for Python web applications - create systemd service and socket
+  ansible.builtin.template:
+    src: '{{ item }}'
+    dest: "/etc/systemd/system/{{ item | replace('_at', '@') | replace('.j2', '')}}"
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  loop:
+    - uwsgi_at.service.j2
+    - uwsgi_at.socket.j2

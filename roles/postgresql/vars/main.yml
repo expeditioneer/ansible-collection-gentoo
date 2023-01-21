@@ -1,0 +1,4 @@
+---
+
+uwsgi:
+  run_directory: /run/uwsgi

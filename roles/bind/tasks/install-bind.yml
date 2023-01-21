@@ -1,0 +1,19 @@
+---
+
+- name: Check that mandatory variables are defined
+  ansible.builtin.assert:
+    that:
+      - bind_configuration_directory is defined
+
+- name: Install Berkeley internet domain name server
+  expeditioneer.gentoo.portage:
+    package: net-dns/bind
+  become: true
+
+- name: Remove unnecessary files
+  ansible.builtin.file:
+    path: '{{ item }}'
+    state: absent
+  become: true
+  loop:
+    - '{{ bind_configuration_directory }}/pri/localhost.zone'

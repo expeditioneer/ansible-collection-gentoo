@@ -1,0 +1,33 @@
+#
+# {{ ansible_managed }}
+#
+
+################################ SHUTDOWN #####################################
+
+# Maximum time to wait for replicas when shutting down, in seconds.
+#
+# During shut down, a grace period allows any lagging replicas to catch up with
+# the latest replication offset before the master exists. This period can
+# prevent data loss, especially for deployments without configured disk backups.
+#
+# The 'shutdown-timeout' value is the grace period's duration in seconds. It is
+# only applicable when the instance has replicas. To disable the feature, set
+# the value to 0.
+#
+# shutdown-timeout 10
+
+# When Redis receives a SIGINT or SIGTERM, shutdown is initiated and by default
+# an RDB snapshot is written to disk in a blocking operation if save points are configured.
+# The options used on signaled shutdown can include the following values:
+# default:  Saves RDB snapshot only if save points are configured.
+#           Waits for lagging replicas to catch up.
+# save:     Forces a DB saving operation even if no save points are configured.
+# nosave:   Prevents DB saving operation even if one or more save points are configured.
+# now:      Skips waiting for lagging replicas.
+# force:    Ignores any errors that would normally prevent the server from exiting.
+#
+# Any combination of values is allowed as long as "save" and "nosave" are not set simultaneously.
+# Example: "nosave force now"
+#
+# shutdown-on-sigint default
+# shutdown-on-sigterm default

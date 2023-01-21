@@ -1,0 +1,13 @@
+#
+# {{ ansible_managed }}
+#
+
+[Unit]
+Description=Run named-update-root-hints semi-annually
+
+[Timer]
+OnCalendar=*-01,07-01 00:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

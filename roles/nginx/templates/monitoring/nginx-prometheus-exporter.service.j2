@@ -1,0 +1,17 @@
+#
+# {{ ansible_managed }}
+#
+
+[Unit]
+Description=Nginx Prometheus Exporter
+Documentation=https://github.com/nginxinc/nginx-prometheus-exporter
+After=network-online.target
+
+[Service]
+User=node_exporter
+Restart=on-failure
+
+ExecStart=/usr/local/bin/nginx-prometheus-exporter -nginx.scrape-uri http://127.0.0.1:8080/stub_status
+
+[Install]
+WantedBy=default.target

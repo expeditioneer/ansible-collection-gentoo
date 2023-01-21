@@ -1,0 +1,19 @@
+server {
+    listen       80;
+    server_name  zigbee2mqtt zigbee2mqtt.home.arpa;
+    return 301   https://zigbee2mqtt.home.arpa$request_uri;
+}
+
+server {
+    server_name  zigbee2mqtt.home.arpa;
+
+    ssl_certificate     /etc/ssl/nginx/zigbee2mqtt.home.arpa.crt;
+    ssl_certificate_key /etc/ssl/nginx/zigbee2mqtt.home.arpa.key;
+
+    # In case you want to use basic authentication:
+    auth_basic "Login";
+    auth_basic_user_file {{ zigbee2mqtt_nginx_configuration_dir }}/basic_auth_user_file;
+
+    include /etc/nginx/include/ssl_settings.conf;
+    include {{ zigbee2mqtt_nginx_configuration_dir }}/locations.conf;
+}

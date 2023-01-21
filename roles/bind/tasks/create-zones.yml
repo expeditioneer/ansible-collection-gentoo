@@ -1,0 +1,89 @@
+---
+
+- name: Assert that mandatory variables are defined
+  ansible.builtin.assert:
+    that:
+      - bind_name_server.configuration_directory is defined
+      - bind_name_server.zones is defined
+
+- name: Create zone files
+  ansible.builtin.template:
+    src: zones/{{ item }}
+    dest: "{{ bind_name_server.configuration_directory }}/{{ item | replace('.j2', '') }}"
+    owner: root
+    group: named
+    mode: 0640
+  become: true
+  loop: '{{ bind_name_server.zones }}'
+  notify:
+    - Reload zone information
+
+- name: Correct permissions on zone directories
+  ansible.builtin.file:
+    path: '{{ item.path }}'
+    state: directory
+    owner: root
+    group: named
+    mode: '{{ item.mode }}'
+  become: true
+  loop:
+    - { path: /var/bind/pri, mode: '0750' }
+    - { path: /var/bind/dyn, mode: '0770' }
+
+- name: Create rfc1912 directory
+  ansible.builtin.file:
+    path: /var/bind/rfc1912
+    state: directory
+    owner: root
+    group: named
+    mode: 0770
+  become: true
+
+- name: 'Create {{ bind_name_server.configuration_directory }}/rfc1912 symbolic link'
+  ansible.builtin.file:
+    src: ../../var/bind/rfc1912
+    dest: '{{ bind_name_server.configuration_directory }}/rfc1912'
+    state: link
+  become: true
+
+- name: Create zone files for 'named.rfc1912.zones'
+  ansible.builtin.template:
+    src: zones/files/{{ item }}
+    dest: "{{ bind_name_server.configuration_directory }}/rfc1912/{{ item | replace('.j2', '')  }}"
+    owner: root
+    group: named
+    mode: 0640
+  become: true
+  notify: Reload zone information
+  loop:
+    - named.empty.j2
+    - named.localhost.j2
+    - named.loopback.j2
+
+- name: create dynamic update zone files
+  ansible.builtin.template:
+    src: 'zones/dyn/{{ item }}'
+    dest: "{{ bind_name_server.configuration_directory }}/dyn/{{ item | replace('.j2', '') }}"
+    owner: root
+    group: named
+    mode: 0660
+    force: false
+  become: true
+  notify: Reload zone information
+  loop:
+    - home.arpa.dynamic.j2
+    - 0.16.172.in-addr.arpa.dynamic.j2
+    - 1.0.0.d.a.0.f.c.4.f.0.0.3.0.0.2.ip6.arpa.dynamic.j2
+
+- name: create primary zone files
+  ansible.builtin.template:
+    src: 'zones/pri/{{ item }}'
+    dest: "{{ bind_name_server.configuration_directory }}/pri/{{ item | replace('.j2', '') }}"
+    owner: root
+    group: named
+    mode: 0660
+  become: true
+  notify: Reload zone information
+  loop:
+    - 0.16.172.in-addr.arpa.zone.j2
+    - home.arpa.zone.j2

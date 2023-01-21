@@ -1,0 +1,8 @@
+---
+
+- name: restart OpenLDAP Server Daemon
+  ansible.builtin.systemd:
+    name: slapd
+    state: restarted
+    daemon_reload: yes
+  become: true

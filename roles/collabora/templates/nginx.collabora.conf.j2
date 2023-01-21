@@ -1,0 +1,24 @@
+#
+# {{ ansible_managed }}
+#
+
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name collabora collabora.home.arpa;
+    return 301 https://collabora.home.arpa$request_uri;
+}
+
+server {
+    server_name collabora.home.arpa;
+
+    ssl_certificate     /etc/ssl/nginx/collabora.home.arpa.crt;
+    ssl_certificate_key /etc/ssl/nginx/collabora.home.arpa.key;
+
+    access_log	/var/log/nginx/collabora.access.log;
+    error_log	/var/log/nginx/collabora.error.log;
+
+    include /etc/nginx/include/ssl_settings.conf;
+    include {{ collabora_nginx_configuration_dir }}/locations.conf;
+}

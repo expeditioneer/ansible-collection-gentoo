@@ -1,0 +1,12 @@
+#
+# {{ ansible_managed }}
+#
+
+[{{ repository_name | trim }}]
+auto-sync = {{ auto_sync | default('yes') }}
+location = {{ default_repo_path }}/{{ repository_name | lower | replace('repository', '') | trim }}
+sync-type = {{  sync_type }}
+sync-uri = {{ sync_uri }}
+{%  if priority is defined and priority is number %}
+priority = {{ priority }}
+{% endif %}

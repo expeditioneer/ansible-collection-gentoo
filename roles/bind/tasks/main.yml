@@ -1,0 +1,9 @@
+---
+
+# TODO: this should be completely reworked or other approach should be taken
+
+#- ansible.builtin.import_tasks: install-bind.yml
+
+#- ansible.builtin.import_tasks: create-zones.yml
+
+#- ansible.builtin.import_tasks: configure-bind.yml

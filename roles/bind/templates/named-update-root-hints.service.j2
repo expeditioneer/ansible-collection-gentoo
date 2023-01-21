@@ -1,0 +1,12 @@
+#
+# {{ ansible_managed }}
+#
+
+[Unit]
+Description=Update the information on root name servers needed to initialize cache of domain name servers
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/named-update-root-hints
+User=root
+Group=named

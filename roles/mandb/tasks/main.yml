@@ -1,0 +1,23 @@
+---
+
+- name: this should be only executed where systemd is used
+  ansible.builtin.assert:
+    that: ansible_service_mgr == 'systemd'
+
+- name: start and enable man-db.timer
+  ansible.builtin.systemd:
+    name: man-db.timer
+    state: started
+    enabled: yes
+  become: true
+
+- name: remove obsolete man-db cron job
+  ansible.builtin.file:
+    name: /etc/cron.daily/man-db
+    state: absent
+  become: true
+
+- name: remove /etc/cron.daily directory if empty
+  ansible.builtin.shell:
+    cmd: rmdir /etc/cron.daily
+  ignore_errors: yes

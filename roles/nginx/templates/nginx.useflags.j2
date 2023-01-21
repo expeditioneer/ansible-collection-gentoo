@@ -1,0 +1,7 @@
+#
+# {{ ansible_managed }}
+#
+
+www-servers/nginx NGINX_MODULES_HTTP: {% if NGINX_FASTCGI_HTTP_MODULE_NEEDED is not defined %}-fastcgi {% endif %}headers_more metrics realip stub_status
+
+app-misc/mime-types                     nginx

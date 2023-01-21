@@ -1,0 +1,6 @@
+---
+
+bind_configuration_directory: /etc/bind
+
+bind_forwarders:
+    - 172.16.0.254

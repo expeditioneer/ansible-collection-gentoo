@@ -1,0 +1,116 @@
+---
+
+- name: assert that mandatory variables are defined
+  ansible.builtin.assert:
+    that:
+      - homeassistant_configuration_dir is defined
+      - homeassistant_install_dir is defined
+      - homeassistant_log_dir is defined
+      - homeassistant_nginx_configuration_dir is defined
+      - homeassistant_run_directory is defined
+
+- name: Create service user homeassistant
+  ansible.builtin.user:
+    name: homeassistant
+    comment: System user; homeassistant
+    home: /etc/homeassistant
+    system: yes
+    group: homeassistant
+    groups:
+      - dialout
+      - usb
+  become: true
+
+- name: Create necessary directories for homeassistant
+  ansible.builtin.file:
+    path: '{{ directory.path }}'
+    state: directory
+    owner: "{{ directory.owner | default('homeassistant') }}"
+    group: "{{ directory.group | default('homeassistant') }}"
+    mode: 0750
+  loop:
+    - { path: '{{ homeassistant_configuration_dir }}' }
+    - { path: '{{ homeassistant_install_dir }}' }
+    - { path: '{{ homeassistant_log_dir }}' }
+    - { path: '{{ homeassistant_nginx_configuration_dir }}', owner: nginx, group: nginx }
+  loop_control:
+    loop_var: directory
+
+- name: 'Grant user nginx read access to directory {{ homeassistant_install_dir }}'
+  ansible.posix.acl:
+    path: '{{ homeassistant_install_dir }}'
+    entity: nginx
+    etype: user
+    permissions: rx
+    state: present
+  become: true
+
+- name: install homeassistant into a virtualenv, inheriting none of the globally installed modules
+  ansible.builtin.pip:
+    name: '{{ package }}'
+    virtualenv: '{{ homeassistant_install_dir }}'
+  become: true
+  become_user: homeassistant
+  loop:
+    - wheel
+    - homeassistant
+  loop_control:
+    loop_var: package
+
+- name: Create systemd service file for homeassistant
+  ansible.builtin.template:
+    src: homeassistant.service.j2
+    dest: /etc/systemd/system/homeassistant.service
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  notify: restart homeassistant systemd service
+
+- name: Enable and start homeassistant
+  ansible.builtin.systemd:
+    name: homeassistant
+    state: started
+    enabled: yes
+  become: true
+
+- name: Create nginx configuration for homeassistant
+  ansible.builtin.template:
+    src: nginx.homeassistant.conf.j2
+    dest: '{{ nginx_configuration_directory }}/homeassistant.conf'
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  notify: restart NGINX
+
+- name: Create nginx configuration snippets for homeassistant
+  ansible.builtin.template:
+    src: '{{ item.src }}'
+    dest: '{{ homeassistant_nginx_configuration_dir }}/{{ item.dest }}'
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  notify: restart NGINX
+  loop:
+    - { src: nginx.homeassistant.upstream.conf.j2, dest: upstream.conf }
+    - { src: nginx.homeassistant.locations.conf.j2, dest: locations.conf }
+
+- name: Update homeassistant HTTPS certificate
+  ansible.builtin.copy:
+    src: '{{ file.name }}'
+    dest: "/etc/ssl/nginx/{{ file.name | split('/') | last }}"
+    owner: root
+    group: root
+    mode: '{{ file.mode }}'
+  become: true
+  notify: restart NGINX
+  loop:
+    - { name: '{{ homeassistant_https_certificate_file }}',  mode: '0644' }
+    - { name: '{{ homeassistant_https_key_file }}', mode: '0600' }
+  loop_control:
+    loop_var: file
+  when:
+    - homeassistant_https_certificate_file is defined
+    - homeassistant_https_key_file is defined

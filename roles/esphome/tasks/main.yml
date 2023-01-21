@@ -1,0 +1,127 @@
+---
+
+- name: assert that mandatory variables are defined
+  ansible.builtin.assert:
+    that:
+      - esphome_username is defined
+      - esphome_password is defined
+      - esphome_configuration_dir is defined
+      - esphome_install_dir is defined
+      - esphome_nginx_configuration_dir is defined
+      - esphome_run_directory is defined
+      - nginx_configuration_directory is defined
+
+- name: Create service user esphome
+  ansible.builtin.user:
+    name: esphome
+    comment: System user; ESPHome Dashboard
+    home: '{{ esphome_configuration_dir }}'
+    system: yes
+    groups:
+      - dialout
+      - usb
+  become: true
+
+- name: Create tmpfiles.d esphome configuration
+  ansible.builtin.template:
+    src: esphome.tmpfiles.j2
+    dest: /etc/tmpfiles.d/esphome.conf
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  notify:
+    - Create systemd-tmpfiles for esphome
+
+- name: Create necessary directories for esphome
+  ansible.builtin.file:
+    path: '{{ directory.path }}'
+    state: directory
+    owner: "{{ directory.owner | default('esphome') }}"
+    group: "{{ directory.group | default('esphome') }}"
+    mode: 0750
+  loop:
+    - { path: '{{ esphome_configuration_dir }}' }
+    - { path: '{{ esphome_install_dir }}' }
+    - { path: '{{ esphome_nginx_configuration_dir }}', owner: nginx, group: nginx }
+  loop_control:
+    loop_var: directory
+
+- name: 'Grant user nginx read access to directory {{ esphome_install_dir }}'
+  ansible.posix.acl:
+    path: '{{ esphome_install_dir }}'
+    entity: nginx
+    etype: user
+    permissions: rx
+    state: present
+  become: true
+
+- name: Install esphome into a virtualenv, inheriting none of the globally installed modules
+  ansible.builtin.pip:
+    name: '{{ package }}'
+    virtualenv: '{{ esphome_install_dir }}'
+  become: true
+  become_user: esphome
+  loop:
+    - wheel
+    - esphome
+  loop_control:
+    loop_var: package
+
+- name: Create systemd service file for esphome
+  ansible.builtin.template:
+    src: esphome.service.j2
+    dest: /etc/systemd/system/esphome.service
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  notify: Restart esphome dashboard systemd service
+
+- name: Start and enable esphome dashboard systemd service
+  ansible.builtin.systemd:
+    name: esphome
+    state: started
+    enabled: yes
+  become: true
+
+- name: Create nginx configuration for esphome
+  ansible.builtin.template:
+    src: nginx.esphome.conf.j2
+    dest: '{{ nginx_configuration_directory }}/esphome.conf'
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  notify: restart NGINX
+
+- name: Create nginx configuration snippets for esphome
+  ansible.builtin.template:
+    src: '{{ item.src }}'
+    dest: '{{ esphome_nginx_configuration_dir }}/{{ item.dest }}'
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  notify: restart NGINX
+  loop:
+    - { src: nginx.esphome.upstream.conf.j2, dest: upstream.conf }
+    - { src: nginx.esphome.locations.conf.j2, dest: locations.conf }
+
+- name: Update esphome HTTPS certificate
+  ansible.builtin.copy:
+    src: '{{ file.name }}'
+    dest: "/etc/ssl/nginx/{{ file.name | split('/') | last }}"
+    owner: root
+    group: root
+    mode: '{{ file.mode }}'
+  become: true
+  notify: restart NGINX
+  loop:
+    - { name: '{{ esphome_https_certificate_file }}',  mode: '0644' }
+    - { name: '{{ esphome_https_key_file }}', mode: '0600' }
+  loop_control:
+    loop_var: file
+  when:
+    - esphome_https_certificate_file is defined
+    - esphome_https_key_file is defined

@@ -1,0 +1,12 @@
+#
+# {{ ansible_managed }}
+#
+
+[expeditioneer]
+location = /var/db/repos/expeditioneer
+sync-type = git
+sync-uri = https://github.com/expeditioneer/gentoo-overlay.git
+auto-sync = yes
+priority = 1000
+masters = gentoo
+thin-manifests = true

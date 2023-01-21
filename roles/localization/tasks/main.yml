@@ -1,0 +1,59 @@
+---
+
+- name: Assert that necessary variables are defined
+  ansible.builtin.assert:
+    that:
+      - system_time_zone is defined
+      - system_locale is defined
+      - system_locale.name is defined
+      - system_locale.charset is defined
+      - system_language is defined
+      - system_language.name is defined
+      - system_language.charset is defined
+
+- name: Set timezone to '{{ system_time_zone }}'
+  community.general.timezone:
+    name: '{{ system_time_zone }}'
+  become: true
+
+- name: Create configuration file for locale-gen
+  ansible.builtin.template:
+    src: locale.gen.j2
+    dest: /etc/locale.gen
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+- name: Ensure localisation files for '{{ system_locale.name }}' are available
+  community.general.locale_gen:
+    name: "{{ system_locale.name }}"
+    state: present
+  become: true
+
+- name: Ensure localisation files for '{{ system_language.name }}' are available
+  community.general.locale_gen:
+    name: "{{ system_language.name }}"
+    state: present
+  become: true
+
+- name: Get current locale and language configuration
+  ansible.builtin.command:
+    cmd: localectl status
+  register: locale_status
+  changed_when: false
+  check_mode: false
+
+- name: Parse 'LANG' from current locale and language configuration
+  ansible.builtin.set_fact:
+    locale_lang: "{{ locale_status.stdout | regex_search('LANG=([^\n]+)', '\\1') | first }}"
+
+- name: Parse 'LANGUAGE' from current locale and language configuration
+  ansible.builtin.set_fact:
+    locale_language: "{{ locale_status.stdout | regex_search('LANGUAGE=([^\n]+)', '\\1') | default([locale_lang], true) | first }}"
+
+- name: Configure locale to '{{ system_locale.name }}' and language to '{{ system_language.name }}'
+  ansible.builtin.command:
+    cmd: localectl set-locale LANG={{ system_locale.name }} LANGUAGE={{ system_language.name }}
+  become: true
+  changed_when: locale_lang != system_locale.name or locale_language != system_language.name

@@ -1,0 +1,14 @@
+---
+
+- name: this should be only executed where systemd is used
+  ansible.builtin.assert:
+    that: ansible_service_mgr == 'systemd'
+
+- ansible.builtin.import_tasks: networkd.yml
+
+- ansible.builtin.import_tasks: timesyncd.yml
+
+- ansible.builtin.import_tasks: resolved.yml
+
+# TODO: systemd-oomd - need new kernel with PSI support
+# kernel on workstation configured, needs installation on all hosts

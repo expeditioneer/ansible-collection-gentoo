@@ -1,0 +1,4 @@
+---
+
+dependencies:
+  - role: expeditioneer.gentoo.nginx

@@ -1,0 +1,72 @@
+#
+# {{ ansible_managed }}
+#
+dn: dc={{ domain | lower | split('.') | join(',dc=') }}
+objectclass: organization
+objectclass: dcObject
+o: directory
+
+dn: ou=People,dc={{ domain | lower | split('.') | join(',dc=') }}
+objectclass: top
+objectclass: organizationalUnit
+ou: People
+description: Organizational unit for people
+
+{% for user in openldap_users %}
+dn: cn={{ user.given_name | lower }},ou=People,dc={{ domain | lower | split('.') | join(',dc=') }}
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: posixAccount
+objectClass: inetOrgPerson
+ou: People
+cn: {{ user.given_name | lower }}
+sn: {{ user.surname | lower }}
+givenName: {{ user.given_name | lower}}
+mail: {{ user.mail | lower }}
+userPassword: {{ user.password }}
+uid: {{ user.given_name | lower }}
+uidNumber: {{ user.uid }}
+gidNumber: {{ user.uid }}
+loginShell: /bin/bash
+homeDirectory: /home/{{ user.given_name | lower }}
+
+{% endfor %}
+
+dn: ou=Groups,dc={{ domain | split('.') | join(',dc=') }}
+objectclass: top
+objectclas
+
+
+s: organizationalUnit
+ou: Groups
+description: Organizational unit for groups
+
+{% for group in openldap_groups %}
+dn: cn={{ group.name | lower }},ou=groups,dc={{ domain | lower | split('.') | join(',dc=') }}
+objectClass: posixGroup
+cn: {{ group.name }}
+gidNumber: {{ group.gid }}
+description: {{ group.description }}
+{% for member in group.members %}
+memberuid: {{ member }}
+{% endfor %}
+
+{% endfor %}
+
+dn: ou=services,dc={{ domain | split('.') | join(',dc=') }}
+objectclass: top
+objectClass: organizationalunit
+ou: services
+description: Organizational unit for technical users / service accounts
+
+{% if openldap_applications is defined -%}
+{% for application in openldap_applications %}
+dn: cn={{ application.name }},ou=services,dc={{ domain | lower | split('.') | join(',dc=') }}
+objectClass: simpleSecurityObject
+objectClass: organizationalRole
+cn: {{ application.name }}
+userPassword: {{ application.password }}
+
+{% endfor %}
+{% endif %}

@@ -1,0 +1,17 @@
+#
+# {{ ansible_managed }}
+#
+
+uwsgi:
+  socket: {{ uwsgi.run_directory }}/pgadmin4.socket
+  processes: 1
+  threads: 25
+  chdir: /opt/pgadmin/lib/python{{ ansible_python['version']['major'] }}.{{ ansible_python['version']['minor'] }}/site-packages/pgadmin4
+  manage-script-name: true
+  master: true
+  pidfile: {{ uwsgi.run_directory }}/pgadmin4.pid
+  mount: /=pgAdmin4:app
+  procname: pgAdmin-on-uWSGI
+  die-on-term: true
+  virtualenv: /opt/pgadmin
+  chmod-socket: 660

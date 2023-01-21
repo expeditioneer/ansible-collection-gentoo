@@ -1,0 +1,22 @@
+#
+# {{ ansible_managed }}
+#
+
+dn: ou=kerberos,ou=services,dc={{ domain | split('.') | join(',dc=') }}
+objectClass: top
+objectClass: organizationalUnit
+ou: kerberos
+
+dn: uid=kdc,ou=kerberos,ou=services,dc={{ domain | split('.') | join(',dc=') }}
+uid: kdc
+objectClass: account
+objectClass: simpleSecurityObject
+userPassword: {ARGON2}$argon2i$v=19$m=4096,t=3,p=1$2vKarpDoWMABnkkKzW1BaA$Sp/oq7ju/WeqwTByKRiaSWpUpvauSwNZvjXsHZsLKi8
+description: Kerberos KDC Account
+
+dn: uid=kadmin,ou=kerberos,ou=services,dc={{ domain | split('.') | join(',dc=') }}
+uid: kadmin
+objectClass: account
+objectClass: simpleSecurityObject
+userPassword: {ARGON2}$argon2i$v=19$m=4096,t=3,p=1$++V8qHJoXmMRqD+9TZHyYg$hLQwXzeUfAMd74ZCujMhQPA402/S+ufwnvXdGOjwqmw
+description: Kerberos Admin Server Account

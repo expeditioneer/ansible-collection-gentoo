@@ -1,0 +1,16 @@
+#
+# {{ ansible_managed }}
+#
+
+net-fs/samba    addc ads gpg json ldap python winbind -system-mitkrb5
+
+# required for BIND9 DLZ dns backend module and secured/signed DNS updates
+net-dns/bind        dlz gssapi ldap
+
+# TESTING maybe required to ger
+app-crypt/mit-krb5  ldap
+
+net-dns/bind-tools gssapi
+sys-libs/ldb ldap python
+sys-libs/tdb python
+sys-libs/tevent python

@@ -1,0 +1,23 @@
+#
+# {{ ansible_managed }}
+#
+
+[Unit]
+Description=uWSGI service unit for %i
+After=syslog.target
+
+[Service]
+User=www-%i
+Group=www-%i
+ExecStart=/usr/bin/uwsgi \
+    --yml /etc/uwsgi.d/%i.yml \
+    --socket {{ uwsgi.run_directory }}/%i.socket
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStop=/bin/kill -INT $MAINPID
+Restart=always
+Type=notify
+NotifyAccess=all
+KillSignal=SIGQUIT
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,9 @@
+#
+# {{ ansible_managed }}
+#
+
+[Match]
+Name=br0
+
+[Network]
+DHCP=yes

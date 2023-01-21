@@ -1,0 +1,11 @@
+$TTL 3600       ; 1 hour
+@ IN SOA hydrogen.home.arpa. mailbox.home.arpa. (
+    2204031936  ; serial
+    6H          ; refresh
+    1H          ; retry
+    5W          ; expire
+    1H          ; minimum
+)
+@   NS	hydrogen.home.arpa.
+
+$INCLUDE /var/bind/pri/0.16.172.in-addr.arpa.zone

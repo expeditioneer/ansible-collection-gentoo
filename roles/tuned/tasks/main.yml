@@ -1,0 +1,52 @@
+---
+
+- name: assert that mandatory variables are defined
+  ansible.builtin.assert:
+    that:
+      - tuned_default_profile is defined
+
+- name: Add keywords for tuned required packages
+  ansible.builtin.template:
+    src: tuned.accept_keywords.{{ ansible_architecture }}.j2
+    dest: /etc/portage/package.accept_keywords/10-tuned
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+- name: Configure tuned use-flags
+  ansible.builtin.template:
+    src: tuned.useflags.j2
+    dest: /etc/portage/package.use/10-tuned
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+- name: Install daemon for monitoring and adaptive tuning of system devices
+  expeditioneer.gentoo.portage:
+    package:
+      - sys-apps/tuned
+      - sys-auth/polkit
+  become: true
+
+- name: Start and enable tuned.service
+  ansible.builtin.systemd:
+    name: tuned
+    state: started
+    enabled: yes
+  become: true
+
+- name: detect current tuned profile
+  ansible.builtin.command:
+    cmd: tuned-adm active
+  become: true
+  changed_when: false
+  register: tuned
+
+- name: set tuned profile {{ tuned_recommended_profile | default(tuned_default_profile) }}
+  ansible.builtin.command:
+    cmd: tuned-adm profile {{ tuned_recommended_profile | default(tuned_default_profile) }}
+  become: true
+  when:
+    - (tuned_recommended_profile | default(tuned_default_profile)) not in tuned.stdout

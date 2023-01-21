@@ -1,0 +1,9 @@
+#
+# {{ ansible_managed }}
+#
+
+[Service]
+Environment="SLAPD_URLS=ldaps:/// ldap:/// ldapi:///"
+
+{# root:ldap 0640
+#Environment="KRB5_KTNAME=/etc/krb5.ldap.keytab" #}

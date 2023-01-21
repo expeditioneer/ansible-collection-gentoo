@@ -1,0 +1,20 @@
+---
+
+# TODO client only use-flags currently only server use-flags available here
+# net-nds/openldap minimal
+
+- name: Create ldap.conf
+  ansible.builtin.template:
+    src: ldap.conf.j2
+    dest: /etc/openldap/ldap.conf
+    owner: root
+    group: ldap
+    mode: 0644
+  become: true
+
+# also with /etc/openldap/ssl - but only on client!
+- name: Remove unnecessary ldap.conf.default file
+  ansible.builtin.file:
+    path: /etc/openldap/ldap.conf.default
+    state: absent
+  become: true

@@ -1,0 +1,41 @@
+---
+
+- name: install PostgreSQL RDBMS
+  ansible.builtin.package:
+    name: dev-db/postgresql
+    changed_use: yes
+  become: true
+
+- name: get latest stable slot
+  ansible.builtin.command:
+    cmd: equery --quiet list --format='$slot' postgresql
+  changed_when: false
+  register: postgresql_slot
+
+- name: create the database cluster
+  ansible.builtin.command:
+    cmd: 'emerge --config dev-db/postgresql:{{postgresql_slot.stdout }}'
+    creates: '/var/lib/postgresql/{{postgresql_slot.stdout }}/data'
+  become: true
+
+- name: create configuration files
+  ansible.builtin.template:
+    src: '{{ item }}'
+    dest: "/etc/postgresql-{{ postgresql_slot.stdout }}/{{ item | replace('.j2', '') }}"
+    owner: postgres
+    group: postgres
+    mode: 0600
+  become: true
+  notify: 'restart postgresql system service'
+  loop:
+    - pg_hba.conf.j2
+    - pg_ident.conf.j2
+    - postgresql.conf.j2
+
+- name: 'start and enable postgresql-{{ postgresql_slot.stdout }} system service'
+  ansible.builtin.systemd:
+    name: 'postgresql-{{ postgresql_slot.stdout }}'
+    state: started
+    enabled: yes
+    daemon_reload: yes
+  become: true

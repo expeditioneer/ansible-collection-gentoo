@@ -1,0 +1,18 @@
+---
+
+- block:
+  - name: Configure refind use-flags
+    ansible.builtin.template:
+      src: refind.useflags.j2
+      dest: /etc/portage/package.use/05-refind
+      owner: root
+      group: root
+      mode: 0644
+    become: true
+
+  - name: Install the UEFI Boot Manager by Rod Smith
+    expeditioneer.gentoo.portage:
+      package: sys-boot/refind
+    become: true
+  when:
+    - ansible_architecture == "x86_64"

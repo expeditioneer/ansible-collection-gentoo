@@ -1,0 +1,9 @@
+#
+# {{ ansible_managed }}
+#
+
+# Gentoo BUG: 'net-nds/openldap-2.6: Type=notify systemd service fails to start'
+# see https://bugs.gentoo.org/843029
+
+[Service]
+NotifyAccess=all

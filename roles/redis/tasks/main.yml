@@ -1,0 +1,115 @@
+---
+
+- name: assert that mandatory variables are defined
+  ansible.builtin.assert:
+    that:
+      - redis_configuration_dir is defined
+      - redis_run_dir is defined
+      - redis_split_configuration_dir is defined
+      - redis_password is defined
+
+- name: A persistent caching system, key-value, and data structures database
+  expeditioneer.gentoo.portage:
+    package: dev-db/redis
+  become: true
+
+- name: Create redis configuration
+  ansible.builtin.template:
+    src: redis.conf.j2
+    dest: '{{ redis_configuration_dir }}/redis.conf'
+    owner: redis
+    group: redis
+    seuser: system_u
+    serole: object_r
+    setype: redis_conf_t
+    mode: 0640
+  become: true
+  notify: Restart redis
+
+- name: 'ensure {{ redis_split_configuration_dir }} directory exists'
+  ansible.builtin.file:
+    path: '{{ redis_split_configuration_dir }}'
+    owner: redis
+    group: redis
+    mode: 0750
+    state: directory
+  become: true
+
+- name: Create split configuration files
+  ansible.builtin.template:
+    src: 'conf.d/{{ item }}'
+    dest: "{{ redis_split_configuration_dir }}/{{ item | replace('.j2', '') }}"
+    owner: redis
+    group: redis
+    mode: 0640
+  become: true
+  notify: Restart redis
+  loop:
+    - 01-modules.conf.j2
+    - 02-network.conf.j2
+    - 03-tls.conf.j2
+    - 05-general.conf.j2
+    - 06-snapshotting.conf.j2
+    - 10-replication.conf.j2
+    - 11-keys-tracking.conf.j2
+    - 20-security.conf.j2
+    - 25-clients.conf.j2
+    - 26-memory-management.conf.j2
+    - 27-lazy-freeing.conf.j2
+    - 28-threaded-io.conf.j2
+    - 30-kernel-oom-control.conf.j2
+    - 31-kernel-transparent-hugepage-control.conf.j2
+    - 35-append-only-mode.conf.j2
+    - 40-shutdown.conf.j2
+    - 50-non-deterministic-long-blocking-commands.conf.j2
+    - 60-redis-cluster.conf.j2
+    - 61-cluster-docker_nat-support.conf.j2
+    - 65-slow-log.conf.j2
+    - 70-latency-monitor.conf.j2
+    - 71-latency-tracking.conf.j2
+    - 75-event-notification.conf.j2
+    - 80-advanced-config.conf.j2
+    - 85-active-defragmentation.conf.j2
+
+- name: Remove obsolete log directory
+  ansible.builtin.file:
+    name: /var/log/redis
+    state: absent
+  become: true
+
+- name: Create tmpfiles.d redis configuration
+  ansible.builtin.template:
+    src: redis.tmpfiles.j2
+    dest: /etc/tmpfiles.d/redis.conf
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  notify:
+    - Create systemd-tmpfiles for redis
+
+- name: create necessary systemd override directories for redis service
+  ansible.builtin.file:
+    path: /etc/systemd/system/redis.service.d
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  become: true
+
+- name: create systemd overrides for sshd service and socket
+  ansible.builtin.template:
+    src: redis.systemd.service.j2
+    dest: /etc/systemd/system/redis.service.d/override.conf
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  notify: Restart redis
+
+- name: Start and enable redis
+  ansible.builtin.systemd:
+    name: redis
+    enabled: yes
+    state: started
+  become: true

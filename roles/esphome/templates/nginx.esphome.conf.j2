@@ -1,0 +1,26 @@
+#
+# {{ ansible_managed }}
+#
+
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name esphome esphome.home.arpa;
+    return 301 https://esphome.home.arpa$request_uri;
+}
+
+server {
+    server_name esphome.home.arpa;
+
+    ssl_certificate     /etc/ssl/nginx/esphome.home.arpa.crt;
+    ssl_certificate_key /etc/ssl/nginx/esphome.home.arpa.key;
+
+    access_log	/var/log/nginx/esphome.access.log;
+    error_log	/var/log/nginx/esphome.error.log;
+
+    include /etc/nginx/include/ssl_settings.conf;
+    include {{ esphome_nginx_configuration_dir }}/locations.conf;
+}
+
+include {{ esphome_nginx_configuration_dir }}/upstream.conf;

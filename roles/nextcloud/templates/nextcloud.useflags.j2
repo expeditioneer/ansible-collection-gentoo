@@ -1,0 +1,15 @@
+#
+# {{ ansible_managed }}
+#
+
+www-apps/nextcloud	postgres -sqlite
+
+dev-lang/php		bcmath gmp ldap sodium
+
+# required by virtual/httpd-php-8.1::gentoo
+>=dev-lang/php-8.1.12 zip curl truetype xmlwriter xmlreader gd postgres intl pdo fpm
+# required by dev-php/pecl-imagick-3.5.1::gentoo
+>=media-gfx/imagemagick-7.1.0.44-r1 -openmp
+# required by dev-lang/php-8.1.12::gentoo
+# required by virtual/httpd-php-8.1::gentoo
+>=app-eselect/eselect-php-0.9.8 fpm

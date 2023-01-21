@@ -1,0 +1,183 @@
+---
+
+- name: Assert that necessary variables are defined
+  ansible.builtin.assert:
+    that:
+      - certificates_directory is defined
+      - domain is defined
+      - intermediate_certificate is defined
+      - ldap_certificate_file is defined
+      - ldap_key_file is defined
+      - openldap is defined
+      - openldap.argsfile is defined
+      - openldap.certificate_directory is defined
+      - openldap.certificate_file_name is defined
+      - openldap.key_file_name is defined
+      - openldap.pidfile is defined
+      - openldap.rootpw is defined
+
+- name: ensure /etc/portage/package.accept_keywords directory exists
+  ansible.builtin.file:
+    path: /etc/portage/package.accept_keywords
+    state: directory
+  become: true
+
+- name: Add keywords for OpenLDAP required packages
+  ansible.builtin.template:
+    src: openldap.accept_keywords.j2
+    dest: /etc/portage/package.accept_keywords/60-openldap
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+- name: Configure use flags
+  ansible.builtin.template:
+    src: openldap.useflags.j2
+    dest: /etc/portage/package.use/60-openldap
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+- name: install openldap package
+  ansible.builtin.package:
+    name: net-nds/openldap
+  become: true
+
+- name: Update OpenLDAP Server Daemon certificate
+  ansible.builtin.copy:
+    src: '{{ file.source_name }}'
+    dest: "/etc/openldap/ssl/{{ file.target_name }}"
+    owner: root
+    group: ldap
+    mode: '{{ file.mode }}'
+  become: true
+  notify: restart OpenLDAP Server Daemon
+  loop:
+    - { source_name: '{{ ldap_certificate_file }}',  target_name: '{{ openldap.certificate_file_name }}', mode: '0644' }
+    - { source_name: '{{ ldap_key_file }}', target_name: '{{ openldap.key_file_name }}', mode: '0640' }
+  loop_control:
+    loop_var: file
+
+- name: create slapd SystemD override
+  block:
+  - name: create SystemD override directory
+    ansible.builtin.file:
+      path: /etc/systemd/system/slapd.service.d
+      state: directory
+      owner: root
+      group: root
+      mode: 0755
+    become: true
+
+  - name: remove Gentoo SystemD override
+    ansible.builtin.file:
+      path: /etc/systemd/system/slapd.service.d/00gentoo.conf
+      state: absent
+    become: true
+
+  - name: create slapd SystemD overrides
+    ansible.builtin.template:
+      src: '{{ item }}'
+      dest: "/etc/systemd/system/slapd.service.d/{{ item | regex_replace('.j2$', '') }}"
+      owner: root
+      group: root
+      mode: 0644
+    become: true
+    loop:
+      - 10-environment.conf.j2
+      - 99-bugfix.conf.j2
+
+# Shamelessly stolen from https://raw.githubusercontent.com/mesosphere-backup/docker-containers/master/openldap/rfc2307bis/rfc2307bis.ldif
+# copy rfc2307bis.ldif -> /etc/openldap/schema/rfc2307bis.ldif
+# https://ess.cs.uos.de/git/software/osdi20-artifacts/samba/-/raw/efc335a03062740f51a6edd09d765a8b77e239c5/examples/LDAP/samba.ldif
+# copy samba.ldif -> /etc/openldap/schema/samba.ldif
+
+- name: change ownership of directory '/etc/openldap/slap.d'
+  ansible.builtin.file:
+    path: /etc/openldap/slapd.d
+    state: directory
+    owner: ldap
+    group: ldap
+
+# Gentoo BUG: 'app-crypt/mit-krb5 openldap useflag should also install kerberos ldif file'
+# see https://bugs.gentoo.org/890038
+- name: create kerberos schema ldif file for LDAP server
+  ansible.builtin.copy:
+    src: kerberos.openldap.ldif
+    dest: /etc/openldap/schema/kerberos.ldif
+    owner: root
+    group: root
+    mode: 0444
+  become: true
+
+- name: necessary directory for OpenLDAP ldif files
+  ansible.builtin.file:
+    path: /etc/openldap/ldif
+    state: directory
+    owner: root
+    group: ldap
+    mode: 0750
+  become: true
+
+- name: create slapd configuration snippets to populate LDAP server
+  ansible.builtin.template:
+    src: 'ldif/{{ item }}'
+    dest: "/etc/openldap/ldif/{{ item | regex_replace('.j2', '') }}"
+    owner: root
+    group: ldap
+    mode: 0640
+  become: true
+  loop:
+    - 01-slapd.ldif.j2
+    - 10-directory.ldif.j2
+    - 11-kerberos.ldif.j2
+#    - zzz_indices.ldif.j2
+
+# sudo -u ldap slapadd -n 0 -F /etc/openldap/slapd.d -l /etc/openldap/ldif/01-slapd.ldif -uv
+# sudo -u ldap slapadd -n 0 -F /etc/openldap/slapd.d -l /etc/openldap/ldif/01-slapd.ldif
+
+# sudo -u ldap slapadd -n 1 -F /etc/openldap/slapd.d -l /etc/openldap/ldif/10-directory.ldif -uv
+# sudo -u ldap slapadd -n 1 -F /etc/openldap/slapd.d -l /etc/openldap/ldif/10-directory.ldif
+
+# sudo -u ldap slapadd -n 1 -F /etc/openldap/slapd.d -l /etc/openldap/ldif/11-kerberos.ldif -uv
+# sudo -u ldap slapadd -n 1 -F /etc/openldap/slapd.d -l /etc/openldap/ldif/11-kerberos.ldif
+
+# TODO: currently not working
+# sudo -u ldap slapadd -n 1 -F /etc/openldap/slapd.d -l /etc/openldap/indices.ldif -u
+
+
+#- name: Enable and start OpenLDAP Server Daemon
+#  ansible.builtin.systemd:
+#    name: slapd
+#    state: started
+#    enabled: yes
+#  become: true
+
+
+#  ldapmodify -Q -Y EXTERNAL -H ldapi:/// <<EOF
+#  dn: olcDatabase={1}mdb,cn=config
+#  add: olcAccess
+#  olcAccess: {0}to attrs=krbPrincipalKey
+#    by anonymous auth
+#    by dn.exact="uid=kdc,ou=kerberos,ou=Services,{{ domain | lower | split('.') | join(',dc=') }}" read
+#    by dn.exact="uid=kadmin,ou=kerberos,ou=Services,{{ domain | lower | split('.') | join(',dc=') }}" write
+#    by self write
+#    by * none
+#  -
+#  add: olcAccess
+#  olcAccess: {1}to dn.subtree="cn=krbContainer,ou=kerberos,ou=Services,{{ domain | lower | split('.') | join(',dc=') }}"
+#    by dn.exact="uid=kdc,ou=kerberos,ou=Services,{{ domain | lower | split('.') | join(',dc=') }}" read
+#    by dn.exact="uid=kadmin,ou=kerberos,ou=Services,{{ domain | lower | split('.') | join(',dc=') }}" write
+#    by * none
+#  EOF
+
+
+#ldapmodify -H ldapi:/// -Y EXTERNAL << EOF
+#dn: cn=config
+#changetype: modify
+#replace: olcAuthzRegexp
+#olcAuthzRegexp: {0}"uid=([^/]*)/admin,(cn=home.arpa,)?cn=gssapi,cn=auth" "cn=admin,{{ domain | lower | split('.') | join(',dc=') }}"
+#olcAuthzRegexp: {1}"uid=([^/]*),(cn=home.arpa,)?cn=gssapi,cn=auth" "uid=$1,ou=users,{{ domain | lower | split('.') | join(',dc=') }}"
+#EOF

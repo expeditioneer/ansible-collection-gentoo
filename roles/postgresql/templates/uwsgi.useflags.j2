@@ -1,0 +1,5 @@
+#
+# {{ ansible_managed }}
+#
+
+www-servers/uwsgi   python -uwsgi_plugins_http -uwsgi_plugins_logfile -uwsgi_plugins_logsocket -uwsgi_plugins_mongodblog -uwsgi_plugins_nagios uwsgi_plugins_systemd_logger -uwsgi_plugins_syslog

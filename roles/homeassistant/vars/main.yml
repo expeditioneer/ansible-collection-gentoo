@@ -1,0 +1,7 @@
+---
+
+homeassistant_configuration_dir: /etc/homeassistant
+homeassistant_install_dir: /usr/local/homeassistant
+homeassistant_log_dir: /var/log/homeassistant
+homeassistant_nginx_configuration_dir: '{{ nginx_configuration_directory }}/homeassistant'
+homeassistant_run_directory: /run/homeassistant

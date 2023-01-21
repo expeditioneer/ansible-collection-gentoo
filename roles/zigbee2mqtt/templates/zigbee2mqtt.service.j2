@@ -1,0 +1,16 @@
+[Unit]
+Description=zigbee2mqtt
+After=network.target
+
+[Service]
+User=zigbee2mqtt
+ExecStart=/usr/bin/npm start
+WorkingDirectory={{ zigbee2mqtt_install_dir }}
+StandardOutput=inherit
+# Or use StandardOutput=null if you don't want Zigbee2MQTT messages filling syslog, for more options see systemd.exec(5)
+StandardError=inherit
+Restart=always
+RestartSec=10s
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,9 @@
+#
+# {{ ansible_managed }}
+#
+
+BASE    dc={{ domain | lower | split('.') | join(',dc=') }}
+URI     ldap://ldap.home.arpa
+
+TLS_REQCERT     demand
+TLS_CACERTDIR   /etc/ssl/certs

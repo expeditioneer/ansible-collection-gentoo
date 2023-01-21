@@ -1,0 +1,6 @@
+---
+
+redis_configuration_dir: /etc/redis
+redis_split_configuration_dir: '{{ redis_configuration_dir }}/conf.d'
+
+redis_run_dir: /run/redis

@@ -1,0 +1,50 @@
+---
+
+- name: Ensure /etc/portage/package.accept_keywords directory exists
+  ansible.builtin.file:
+    path: /etc/portage/package.accept_keywords
+    state: directory
+  become: true
+
+- name: Add keywords for monitoring required packages
+  ansible.builtin.template:
+    src: monitoring.accept_keywords.j2
+    dest: /etc/portage/package.accept_keywords/10-monitoring
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  when:
+    - ansible_architecture == "aarch64"
+
+
+- name: Install prometheus exporter for machine metrics
+  expeditioneer.gentoo.portage:
+    package: app-metrics/node_exporter
+  become: true
+
+- name: Start and enable node-exporter.service
+  ansible.builtin.systemd:
+    name: node_exporter
+    state: started
+    enabled: yes
+  become: true
+
+- name: Create firewalld service for node-exporter
+  ansible.builtin.template:
+    src: node-exporter.firewalld.service.j2
+    dest: /etc/firewalld/services/node-exporter.xml
+    owner: root
+    group: root
+    mode: 0640
+  become: true
+  notify:
+    - restart firewalld.service
+
+- name: Allow node-exporter through firewall
+  ansible.posix.firewalld:
+    service: node-exporter
+    immediate: yes
+    permanent: yes
+    state: enabled
+  become: true

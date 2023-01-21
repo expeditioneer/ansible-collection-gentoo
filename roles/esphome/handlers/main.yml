@@ -1,0 +1,13 @@
+---
+
+- name: Restart esphome dashboard systemd service
+  ansible.builtin.systemd:
+    name: esphome
+    state: restarted
+    daemon_reload: yes
+  become: true
+
+- name: Create systemd-tmpfiles for esphome
+  ansible.builtin.shell:
+    cmd: systemd-tmpfiles --create /etc/tmpfiles.d/esphome.conf
+  become: true

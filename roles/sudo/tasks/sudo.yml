@@ -1,0 +1,15 @@
+---
+
+- name: configure sudo use-flags
+  ansible.builtin.template:
+    src: sudo/sudo.useflags.j2
+    dest: /etc/portage/package.use/20-sudo
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+- name: Allows users or groups to run commands as other users
+  expeditioneer.gentoo.portage:
+    package: app-admin/sudo
+  become: true

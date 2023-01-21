@@ -1,0 +1,15 @@
+---
+
+bind_name_server:
+  configuration_directory: /etc/bind
+
+  forwarders:
+    - 172.16.0.254
+
+  trusted_networks:
+    - 172.16.0.0/16
+
+  zones:
+    - named.rfc1912.zones.j2
+    - named.home.arpa.zone.j2
+    - named.0.16.172.in-addr.arpa.zone.j2

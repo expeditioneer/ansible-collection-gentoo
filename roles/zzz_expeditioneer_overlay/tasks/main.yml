@@ -1,0 +1,34 @@
+---
+
+- name: Create overlay directory
+  file:
+    path: '{{ item }}'
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  become: true
+  loop:
+    - /etc/portage/repos.conf
+    - /var/db/repos/expeditioneer
+
+- name: Install git
+  package:
+    name:
+      - dev-vcs/git
+  become: true
+
+- name: Add required expeditioneer overlay
+  template:
+    src: expeditioneer-overlay.j2
+    dest: /etc/portage/repos.conf/expeditioneer.conf
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  register: expeditioneer_overlay
+
+- name: sync all portage overlays
+  command: eix-sync
+  become: true
+  when: expeditioneer_overlay.changed

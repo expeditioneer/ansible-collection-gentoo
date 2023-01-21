@@ -1,0 +1,33 @@
+---
+
+- name: Check that mandatory variables are defined
+  ansible.builtin.assert:
+    that:
+      - dns is defined
+      - dns.domain is defined
+      - dns.server is defined
+
+- name: Create resolved.conf
+  ansible.builtin.template:
+    src: resolved.conf.j2
+    dest: /etc/systemd/resolved.conf
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  notify: restart systemd-resolved service
+
+- name: Start and enable systemd-resolved.service
+  ansible.builtin.systemd:
+    name: systemd-resolved
+    state: started
+    enabled: yes
+  become: true
+
+- name: Create symlink for /etc/resolv.conf to use systemd stub-resolver
+  ansible.builtin.file:
+    path: /etc/resolv.conf
+    src: ../run/systemd/resolve/stub-resolv.conf
+    state: link
+    force: true
+  become: true

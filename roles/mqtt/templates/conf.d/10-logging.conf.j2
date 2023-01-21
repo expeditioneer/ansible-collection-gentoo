@@ -1,0 +1,74 @@
+#
+# {{ ansible_managed }}
+#
+
+# =================================================================
+# Logging
+# =================================================================
+
+# Places to log to. Use multiple log_dest lines for multiple
+# logging destinations.
+# Possible destinations are: stdout stderr syslog topic file dlt
+#
+# stdout and stderr log to the console on the named output.
+#
+# syslog uses the userspace syslog facility which usually ends up
+# in /var/log/messages or similar.
+#
+# topic logs to the broker topic '$SYS/broker/log/<severity>',
+# where severity is one of D, E, W, N, I, M which are debug, error,
+# warning, notice, information and message. Message type severity is used by
+# the subscribe/unsubscribe log_types and publishes log messages to
+# $SYS/broker/log/M/susbcribe or $SYS/broker/log/M/unsubscribe.
+#
+# The file destination requires an additional parameter which is the file to be
+# logged to, e.g. "log_dest file /var/log/mosquitto.log". The file will be
+# closed and reopened when the broker receives a HUP signal. Only a single file
+# destination may be configured.
+#
+# The dlt destination is for the automotive `Diagnostic Log and Trace` tool.
+# This requires that Mosquitto has been compiled with DLT support.
+#
+# Note that if the broker is running as a Windows service it will default to
+# "log_dest none" and neither stdout nor stderr logging is available.
+# Use "log_dest none" if you wish to disable logging.
+#log_dest stderr
+
+# Types of messages to log. Use multiple log_type lines for logging
+# multiple types of messages.
+# Possible types are: debug, error, warning, notice, information,
+# none, subscribe, unsubscribe, websockets, all.
+# Note that debug type messages are for decoding the incoming/outgoing
+# network packets. They are not logged in "topics".
+#log_type error
+#log_type warning
+#log_type notice
+#log_type information
+
+
+# If set to true, client connection and disconnection messages will be included
+# in the log.
+#connection_messages true
+
+# If using syslog logging (not on Windows), messages will be logged to the
+# "daemon" facility by default. Use the log_facility option to choose which of
+# local0 to local7 to log to instead. The option value should be an integer
+# value, e.g. "log_facility 5" to use local5.
+#log_facility
+
+# If set to true, add a timestamp value to each log message.
+#log_timestamp true
+
+# Set the format of the log timestamp. If left unset, this is the number of
+# seconds since the Unix epoch.
+# This is a free text string which will be passed to the strftime function. To
+# get an ISO 8601 datetime, for example:
+# log_timestamp_format %Y-%m-%dT%H:%M:%S
+#log_timestamp_format
+
+# Change the websockets logging level. This is a global option, it is not
+# possible to set per listener. This is an integer that is interpreted by
+# libwebsockets as a bit mask for its lws_log_levels enum. See the
+# libwebsockets documentation for more details. "log_type websockets" must also
+# be enabled.
+#websockets_log_level 0

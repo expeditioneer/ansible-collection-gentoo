@@ -1,0 +1,13 @@
+---
+
+- name: Restart redis
+  ansible.builtin.systemd:
+    name: redis
+    state: restarted
+    daemon_reload: yes
+  become: true
+
+- name: Create systemd-tmpfiles for redis
+  ansible.builtin.shell:
+    cmd: systemd-tmpfiles --create /etc/tmpfiles.d/redis.conf
+  become: true

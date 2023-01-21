@@ -1,0 +1,26 @@
+#
+# {{ ansible_managed }}
+#
+
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name libretuya libretuya.home.arpa;
+    return 301 https://libretuya.home.arpa$request_uri;
+}
+
+server {
+    server_name libretuya.home.arpa;
+
+    ssl_certificate     /etc/ssl/nginx/libretuya.home.arpa.crt;
+    ssl_certificate_key /etc/ssl/nginx/libretuya.home.arpa.key;
+
+    access_log	/var/log/nginx/libretuya.access.log;
+    error_log	/var/log/nginx/libretuya.error.log;
+
+    include /etc/nginx/include/ssl_settings.conf;
+    include {{ libretuya_nginx_configuration_dir }}/locations.conf;
+}
+
+include {{ libretuya_nginx_configuration_dir }}/upstream.conf;

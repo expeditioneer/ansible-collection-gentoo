@@ -1,0 +1,64 @@
+---
+
+- name: assert that necessary variables are defined
+  ansible.builtin.assert:
+    that:
+      - kea.dhcpv4_ctrl_socket_name is defined
+      - kea.dhcpv6_ctrl_socket_name is defined
+      - kea.ddns_ctrl_socket_name is defined
+
+- name: Add keywords for kea required packages
+  ansible.builtin.template:
+    src: kea.accept_keywords.j2
+    dest: /etc/portage/package.accept_keywords/60-kea
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+- name: Kea High-performance production grade DHCPv4 & DHCPv6 server - configure use flags
+  ansible.builtin.template:
+    src: kea.useflags.j2
+    dest: /etc/portage/package.use/60-kea
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+- name: Kea High-performance production grade DHCPv4 & DHCPv6 server - install package
+  ansible.builtin.package:
+    name: net-misc/kea
+    changed_use: yes
+  become: true
+
+- name: Kea High-performance production grade DHCPv4 & DHCPv6 server - create configuration files
+  ansible.builtin.template:
+    src: '{{ item }}'
+    dest: "/etc/kea/{{ item | replace('.j2', '') }}"
+    owner: root
+    group: dhcp
+    mode: 0640
+  become: true
+  loop:
+    - kea-ctrl-agent.conf.j2
+    - kea-dhcp4.conf.j2
+
+- name: install prerequisites for ansible postgresql community module
+  expeditioneer.gentoo.portage:
+    package: dev-python/psycopg
+  become: true
+
+- name: create PostgreSQL database for kea
+  community.postgresql.postgresql_db:
+    name: kea
+    encoding: UTF-8
+
+- name: create PostgreSQL user KEA with ALL privileges on KEA database
+  community.postgresql.postgresql_user:
+    db: kea
+    name: kea
+    password: kea
+    priv: ALL
+  become: true
+
+# kea-admin db-init pgsql --user name kea --password kea --name kea

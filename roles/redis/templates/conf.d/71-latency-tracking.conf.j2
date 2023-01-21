@@ -1,0 +1,17 @@
+#
+# {{ ansible_managed }}
+#
+
+################################ LATENCY TRACKING ##############################
+
+# The Redis extended latency monitoring tracks the per command latencies and enables
+# exporting the percentile distribution via the INFO latencystats command,
+# and cumulative latency distributions (histograms) via the LATENCY command.
+#
+# By default, the extended latency monitoring is enabled since the overhead
+# of keeping track of the command latency is very small.
+# latency-tracking yes
+
+# By default the exported latency percentiles via the INFO latencystats command
+# are the p50, p99, and p999.
+# latency-tracking-info-percentiles 50 99 99.9

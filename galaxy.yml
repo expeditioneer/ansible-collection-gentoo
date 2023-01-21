@@ -1,0 +1,31 @@
+namespace: expeditioneer
+name: gentoo
+
+version: 1.0.0
+
+readme: README.md
+
+authors:
+  - Dennis Lamm <expeditioneer@gentoo.org>
+
+description: Collection for
+
+license_file: 'LICENSE'
+
+tags: ['gentoo']
+
+dependencies: {}
+
+
+repository: http://example.com/repository
+documentation: http://docs.example.com
+homepage: http://example.com
+issues: http://example.com/issue/tracker
+
+build_ignore:
+  - '*.tar.gz'
+  - '*.pdf'
+  - .gitignore
+  - .idea
+  - .mypy_cache
+  - plugins/modules/test

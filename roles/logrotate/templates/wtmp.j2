@@ -1,0 +1,10 @@
+#
+# {{ ansible_managed }}
+#
+
+/var/log/wtmp {
+    monthly
+    create 0664 root utmp
+    minsize 1M
+    rotate 1
+}

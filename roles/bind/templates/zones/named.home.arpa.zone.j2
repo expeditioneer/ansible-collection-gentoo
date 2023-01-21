@@ -1,0 +1,10 @@
+//
+// {{ ansible_managed }}
+//
+
+zone "home.arpa" {
+    type master;
+    file "/var/bind/dyn/home.arpa.dynamic";
+    allow-query { trusted; };
+    allow-update { key ddns-key; };
+};

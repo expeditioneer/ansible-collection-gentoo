@@ -1,0 +1,18 @@
+#
+# {{ ansible_managed }}
+#
+
+CHOST="{{ ansible_architecture }}-unknown-linux-gnu"
+
+COMMON_FLAGS="{{ raspberry_pi['compile_flags'] }}"
+CFLAGS="${COMMON_FLAGS}"
+CXXFLAGS="${COMMON_FLAGS}"
+FCFLAGS="${COMMON_FLAGS}"
+FFLAGS="${COMMON_FLAGS}"
+
+MAKEOPTS="-j{{ ansible_processor_count + 16 }} -l{{ ansible_processor_count }}"
+EMERGE_DEFAULT_OPTS="--jobs {{ ansible_processor_count }}"
+
+LC_MESSAGES=C
+
+FEATURES="distcc"

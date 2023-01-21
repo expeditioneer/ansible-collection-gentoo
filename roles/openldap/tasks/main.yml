@@ -1,0 +1,5 @@
+---
+
+- ansible.builtin.import_tasks: server.yml
+
+- ansible.builtin.import_tasks: client.yml

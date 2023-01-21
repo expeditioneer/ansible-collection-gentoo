@@ -1,0 +1,70 @@
+//
+// {{ ansible_managed }}
+//
+
+acl xfer {
+    none;
+};
+
+acl trusted {
+    127.0.0.0/24;
+    ::1/128;
+    {%  for trusted_network in bind_name_server.trusted_networks %}
+{{ trusted_network }};
+    {%  endfor %}
+};
+
+options {
+    directory "/var/bind";
+    pid-file "/run/named/named.pid";
+
+    listen-on { any; };
+    listen-on-v6 { any; };
+
+    allow-query { trusted; };
+
+    allow-query-cache { trusted; };
+
+    allow-recursion { trusted; };
+
+    allow-transfer { none; };
+
+    allow-update { none; };
+
+    forward only;
+
+    forwarders {
+        {%-  for forwarder in bind_forwarders %}
+            {{ forwarder }};
+        {%  endfor -%}
+    };
+    dnssec-validation no;
+};
+
+logging {
+    channel default_log {
+        file "/var/log/named/named.log" versions 5 size 50M;
+        print-time yes;
+        print-severity yes;
+        print-category yes;
+    };
+
+    category default { default_log; };
+    category general { default_log; };
+};
+
+include "{{ bind_name_server.configuration_directory }}/rndc.key";
+include "{{ bind_name_server.configuration_directory }}/ddns.key";
+
+controls {
+    inet 127.0.0.1 port 953 allow { 127.0.0.1/32; ::1/128; } keys { "rndc-key"; };
+};
+
+zone "." in {
+    type hint;
+    file "/var/bind/named.cache";
+};
+
+{% for zone in bind_name_server.zones %}
+include "/etc/bind/{{ zone | replace('.j2', '') }}";
+{% endfor %}

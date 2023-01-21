@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- {{ ansible_managed }} -->
+<service>
+    <short>unifi</short>
+    <description>Management Controller for Ubiquiti Networks UniFi APs</description>
+    <!--  Port used for "Make application discoverable on L2 network" in the UniFi Network settings-->
+    <port protocol="udp" port="1900" />
+    <!-- Port used for STUN -->
+    <port protocol="udp" port="3478" />
+    <!-- Port used for remote syslog capture -->
+    <port protocol="udp" port="5514" />
+    <!-- Ports used by AP-EDU broadcasting -->
+    <port protocol="udp" port="5656-5699" />
+    <!-- Port used for UniFi mobile speed test -->
+    <port protocol="tcp" port="6789" />
+    <!-- Port used for device and application communication -->
+    <port protocol="tcp" port="8080" />
+    <!-- Port used for application GUI/API as seen in a web browser -->
+    <port protocol="tcp" port="8443" />
+    <!-- Port used for device discovery -->
+    <port protocol="udp" port="10001" />
+    <!-- Port used for local-bound database communication -->
+    <port protocol="tcp" port="27117" />
+</service>

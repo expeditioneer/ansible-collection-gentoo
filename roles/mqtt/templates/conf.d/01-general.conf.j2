@@ -1,0 +1,191 @@
+#
+# {{ ansible_managed }}
+#
+
+# =================================================================
+# General configuration
+# =================================================================
+
+# Use per listener security settings.
+#
+# It is recommended this option be set before any other options.
+#
+# If this option is set to true, then all authentication and access control
+# options are controlled on a per listener basis. The following options are
+# affected:
+#
+# acl_file
+# allow_anonymous
+# allow_zero_length_clientid
+# auto_id_prefix
+# password_file
+# plugin
+# plugin_opt_*
+# psk_file
+#
+# Note that if set to true, then a durable client (i.e. with clean session set
+# to false) that has disconnected will use the ACL settings defined for the
+# listener that it was most recently connected to.
+#
+# The default behaviour is for this to be set to false, which maintains the
+# setting behaviour from previous versions of mosquitto.
+#per_listener_settings false
+
+
+# This option controls whether a client is allowed to connect with a zero
+# length client id or not. This option only affects clients using MQTT v3.1.1
+# and later. If set to false, clients connecting with a zero length client id
+# are disconnected. If set to true, clients will be allocated a client id by
+# the broker. This means it is only useful for clients with clean session set
+# to true.
+#allow_zero_length_clientid true
+
+# If allow_zero_length_clientid is true, this option allows you to set a prefix
+# to automatically generated client ids to aid visibility in logs.
+# Defaults to 'auto-'
+#auto_id_prefix auto-
+
+# This option affects the scenario when a client subscribes to a topic that has
+# retained messages. It is possible that the client that published the retained
+# message to the topic had access at the time they published, but that access
+# has been subsequently removed. If check_retain_source is set to true, the
+# default, the source of a retained message will be checked for access rights
+# before it is republished. When set to false, no check will be made and the
+# retained message will always be published. This affects all listeners.
+#check_retain_source true
+
+# QoS 1 and 2 messages will be allowed inflight per client until this limit
+# is exceeded.  Defaults to 0. (No maximum)
+# See also max_inflight_messages
+#max_inflight_bytes 0
+
+# The maximum number of QoS 1 and 2 messages currently inflight per
+# client.
+# This includes messages that are partway through handshakes and
+# those that are being retried. Defaults to 20. Set to 0 for no
+# maximum. Setting to 1 will guarantee in-order delivery of QoS 1
+# and 2 messages.
+#max_inflight_messages 20
+
+# For MQTT v5 clients, it is possible to have the server send a "server
+# keepalive" value that will override the keepalive value set by the client.
+# This is intended to be used as a mechanism to say that the server will
+# disconnect the client earlier than it anticipated, and that the client should
+# use the new keepalive value. The max_keepalive option allows you to specify
+# that clients may only connect with keepalive less than or equal to this
+# value, otherwise they will be sent a server keepalive telling them to use
+# max_keepalive. This only applies to MQTT v5 clients. The default, and maximum
+# value allowable, is 65535.
+#
+# Set to 0 to allow clients to set keepalive = 0, which means no keepalive
+# checks are made and the client will never be disconnected by the broker if no
+# messages are received. You should be very sure this is the behaviour that you
+# want.
+#
+# For MQTT v3.1.1 and v3.1 clients, there is no mechanism to tell the client
+# what keepalive value they should use. If an MQTT v3.1.1 or v3.1 client
+# specifies a keepalive time greater than max_keepalive they will be sent a
+# CONNACK message with the "identifier rejected" reason code, and disconnected.
+#
+#max_keepalive 65535
+
+# For MQTT v5 clients, it is possible to have the server send a "maximum packet
+# size" value that will instruct the client it will not accept MQTT packets
+# with size greater than max_packet_size bytes. This applies to the full MQTT
+# packet, not just the payload. Setting this option to a positive value will
+# set the maximum packet size to that number of bytes. If a client sends a
+# packet which is larger than this value, it will be disconnected. This applies
+# to all clients regardless of the protocol version they are using, but v3.1.1
+# and earlier clients will of course not have received the maximum packet size
+# information. Defaults to no limit. Setting below 20 bytes is forbidden
+# because it is likely to interfere with ordinary client operation, even with
+# very small payloads.
+#max_packet_size 0
+
+# QoS 1 and 2 messages above those currently in-flight will be queued per
+# client until this limit is exceeded.  Defaults to 0. (No maximum)
+# See also max_queued_messages.
+# If both max_queued_messages and max_queued_bytes are specified, packets will
+# be queued until the first limit is reached.
+#max_queued_bytes 0
+
+# Set the maximum QoS supported. Clients publishing at a QoS higher than
+# specified here will be disconnected.
+#max_qos 2
+
+# The maximum number of QoS 1 and 2 messages to hold in a queue per client
+# above those that are currently in-flight.  Defaults to 1000. Set
+# to 0 for no maximum (not recommended).
+# See also queue_qos0_messages.
+# See also max_queued_bytes.
+#max_queued_messages 1000
+#
+# This option sets the maximum number of heap memory bytes that the broker will
+# allocate, and hence sets a hard limit on memory use by the broker.  Memory
+# requests that exceed this value will be denied. The effect will vary
+# depending on what has been denied. If an incoming message is being processed,
+# then the message will be dropped and the publishing client will be
+# disconnected. If an outgoing message is being sent, then the individual
+# message will be dropped and the receiving client will be disconnected.
+# Defaults to no limit.
+#memory_limit 0
+
+# This option sets the maximum publish payload size that the broker will allow.
+# Received messages that exceed this size will not be accepted by the broker.
+# The default value is 0, which means that all valid MQTT messages are
+# accepted. MQTT imposes a maximum payload size of 268435455 bytes.
+#message_size_limit 0
+
+# This option allows the session of persistent clients (those with clean
+# session set to false) that are not currently connected to be removed if they
+# do not reconnect within a certain time frame. This is a non-standard option
+# in MQTT v3.1. MQTT v3.1.1 and v5.0 allow brokers to remove client sessions.
+#
+# Badly designed clients may set clean session to false whilst using a randomly
+# generated client id. This leads to persistent clients that connect once and
+# never reconnect. This option allows these clients to be removed.  This option
+# allows persistent clients (those with clean session set to false) to be
+# removed if they do not reconnect within a certain time frame.
+#
+# The expiration period should be an integer followed by one of h d w m y for
+# hour, day, week, month and year respectively. For example
+#
+# persistent_client_expiration 2m
+# persistent_client_expiration 14d
+# persistent_client_expiration 1y
+#
+# The default if not set is to never expire persistent clients.
+#persistent_client_expiration
+
+pid_file {{ mosquitto_run_dir }}/mosquitto.pid
+
+# Set to true to queue messages with QoS 0 when a persistent client is
+# disconnected. These messages are included in the limit imposed by
+# max_queued_messages and max_queued_bytes
+# Defaults to false.
+# This is a non-standard option for the MQTT v3.1 spec but is allowed in
+# v3.1.1.
+#queue_qos0_messages false
+
+# Set to false to disable retained message support. If a client publishes a
+# message with the retain bit set, it will be disconnected if this is set to
+# false.
+#retain_available true
+
+# Disable Nagle's algorithm on client sockets. This has the effect of reducing
+# latency of individual messages at the potential cost of increasing the number
+# of packets being sent.
+#set_tcp_nodelay false
+
+# Time in seconds between updates of the $SYS tree.
+# Set to 0 to disable the publishing of the $SYS tree.
+#sys_interval 10
+
+# The MQTT specification requires that the QoS of a message delivered to a
+# subscriber is never upgraded to match the QoS of the subscription. Enabling
+# this option changes this behaviour. If upgrade_outgoing_qos is set true,
+# messages sent to a subscriber will always match the QoS of its subscription.
+# This is a non-standard option explicitly disallowed by the spec.
+#upgrade_outgoing_qos false
+
+user mosquitto

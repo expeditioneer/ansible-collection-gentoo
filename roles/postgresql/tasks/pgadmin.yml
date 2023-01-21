@@ -1,0 +1,68 @@
+---
+
+- name: GUI administration and development platform for PostgreSQL - install packages for technical user and group
+  ansible.builtin.package:
+    name: '{{ item }}'
+    changed_use: yes
+  become: true
+  loop:
+    - acct-group/www-pgadmin4
+    - acct-user/www-pgadmin4
+
+- name: GUI administration and development platform for PostgreSQL - add technical user to group uwsgi
+  ansible.builtin.user:
+    name: www-pgadmin4
+    groups: uwsgi
+    append: yes
+  become: true
+
+- name: GUI administration and development platform for PostgreSQL - create venv and install via pip
+  ansible.builtin.pip:
+    name: pgadmin4
+    virtualenv: /opt/pgadmin
+    virtualenv_command: /usr/bin/python -m venv
+  become: true
+
+- name: GUI administration and development platform for PostgreSQL - create configuration file
+  ansible.builtin.template:
+    src: pgadmin.conf.j2
+    dest: /etc/pgadmin/config_system.py
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+- name: GUI administration and development platform for PostgreSQL - create necessary directories and files
+  ansible.builtin.file:
+    path: '{{ item.path }}'
+    state: directory
+    owner: www-pgadmin4
+    group: www-pgadmin4
+    mode: '{{ item.mode }}'
+  loop:
+    - { path: /var/log/pgadmin4, mode: '0750' }
+    - { path: /var/lib/pgadmin4, mode: '0750' }
+    - { path: /var/log/pgadmin4, mode: '0750' }
+    - { path: /var/lib/pgadmin4/storage, mode: '0750' }
+
+- name: GUI administration and development platform for PostgreSQL - create uWSGI configuration
+  ansible.builtin.template:
+    src: pgadmin4.uswsgi.yml.j2
+    dest: /etc/uwsgi.d/pgadmin4.yml
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+#  (execute: /opt/pgadmin/lib/python3.9/site-packages/pgadmin4 # python setup.py)
+# START uwsqi@pgadmin4 with environment variables set once afterwards pgadmin is configured
+# declare -x PGADMIN_SETUP_EMAIL="root@localhost"
+# declare -x PGADMIN_SETUP_PASSWORD="root"
+#
+
+- name: GUI administration and development platform for PostgreSQL - start and enable uWSGI systemd service
+  ansible.builtin.systemd:
+    name: uwsgi@pgadmin4.socket
+    state: started
+    enabled: yes
+  become: true

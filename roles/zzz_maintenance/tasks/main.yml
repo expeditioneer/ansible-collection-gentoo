@@ -1,0 +1,22 @@
+---
+
+# create SystemD Service and Timer for
+# eclean distfiles
+# eclean packages
+
+# also start and activate timer
+
+- name: Find git .keep files
+  ansible.builtin.find:
+    paths: /
+    patterns: .keep_*
+    recurse: true
+  become: true
+  register: unnecessary_git_keep_files
+
+- name: Remove unnecessary git .keep files
+  ansible.builtin.file:
+    path: '{{ item.path }}'
+    state: absent
+  loop: '{{ unnecessary_git_keep_files.files }}'
+  become: true

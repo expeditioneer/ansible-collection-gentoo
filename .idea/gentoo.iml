@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="PYTHON_MODULE" version="4">
+  <component name="NewModuleRootManager">
+    <content url="file://$MODULE_DIR$" />
+    <orderEntry type="jdk" jdkName="Python 3.10" jdkType="Python SDK" />
+    <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+  <component name="TemplatesService">
+    <option name="TEMPLATE_CONFIGURATION" value="Jinja2" />
+    <option name="TEMPLATE_FOLDERS">
+      <list>
+        <option value="$MODULE_DIR$/roles/systemd/templates" />
+        <option value="$MODULE_DIR$/roles/distcc/templates" />
+        <option value="$MODULE_DIR$/roles/mongodb/templates" />
+        <option value="$MODULE_DIR$/roles/unifi/templates" />
+        <option value="$MODULE_DIR$/roles/zigbee2mqtt/templates" />
+        <option value="$MODULE_DIR$/roles/mqtt/templates" />
+        <option value="$MODULE_DIR$/roles/tuned/templates" />
+        <option value="$MODULE_DIR$/roles/logrotate/templates" />
+        <option value="$MODULE_DIR$/roles/firewalld/templates" />
+        <option value="$MODULE_DIR$/roles/monitoring/templates" />
+        <option value="$MODULE_DIR$/roles/localization/templates" />
+        <option value="$MODULE_DIR$/roles/portage/templates" />
+        <option value="$MODULE_DIR$/roles/sudo/templates" />
+        <option value="$MODULE_DIR$/roles/zzz_sssd/templates" />
+        <option value="$MODULE_DIR$/roles/ssh/templates" />
+        <option value="$MODULE_DIR$/roles/nginx/templates" />
+        <option value="$MODULE_DIR$/roles/homeassistant/templates" />
+        <option value="$MODULE_DIR$/roles/esphome/templates" />
+        <option value="$MODULE_DIR$/roles/openldap/templates" />
+        <option value="$MODULE_DIR$/roles/samba/templates" />
+        <option value="$MODULE_DIR$/roles/libretuya/templates" />
+        <option value="$MODULE_DIR$/roles/nextcloud/templates" />
+        <option value="$MODULE_DIR$/roles/redis/templates" />
+        <option value="$MODULE_DIR$/roles/postgresql/templates" />
+        <option value="$MODULE_DIR$/roles/refind/templates" />
+        <option value="$MODULE_DIR$/roles/podman/templates" />
+        <option value="$MODULE_DIR$/roles/collabora/templates" />
+        <option value="$MODULE_DIR$/roles/kerberos/templates" />
+        <option value="$MODULE_DIR$/roles/bind/templates" />
+        <option value="$MODULE_DIR$/roles/kea/templates" />
+        <option value="$MODULE_DIR$/roles/initramfs/templates" />
+        <option value="$MODULE_DIR$/roles/libvirt/templates" />
+        <option value="$MODULE_DIR$/roles/389ds/templates" />
+      </list>
+    </option>
+  </component>
+  <component name="TestRunnerService">
+    <option name="PROJECT_TEST_RUNNER" value="Nosetests" />
+  </component>
+</module>

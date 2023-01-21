@@ -1,0 +1,8 @@
+#
+# {{ ansible_managed }}
+#
+
+upstream esphome {
+    server unix:{{ esphome_run_directory }}/esphome.sock;
+    ip_hash;
+}

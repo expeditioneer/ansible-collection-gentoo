@@ -1,0 +1,11 @@
+---
+
+domain: home.arpa
+
+openldap:
+  argsfile: /run/openldap/slapd.args
+  pidfile: /run/openldap/slapd.pid
+  rootpw: '{ARGON2}$argon2i$v=19$m=4096,t=3,p=1$RgMIdrRYyYd9RAd7B4BXgQ$yJsjTXxGglZrELiogA5ucQHMC7sHk+dy/ULBFEzuNR0'
+  certificate_directory: /etc/openldap/ssl
+  certificate_file_name: slapd.crt
+  key_file_name: slapd.key

@@ -1,0 +1,6 @@
+---
+
+esphome_configuration_dir: /etc/esphome
+esphome_install_dir: /usr/local/esphome
+esphome_nginx_configuration_dir: '{{ nginx_configuration_directory }}/esphome'
+esphome_run_directory: /run/esphome

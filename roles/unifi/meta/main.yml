@@ -1,0 +1,5 @@
+---
+
+dependencies:
+  - role: expeditioneer.gentoo.mongodb
+  - role: expeditioneer.gentoo.nginx

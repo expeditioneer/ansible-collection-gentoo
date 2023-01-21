@@ -1,0 +1,44 @@
+---
+
+- name: Configure logrotate use-flags
+  ansible.builtin.template:
+    src: logrotate.useflags.j2
+    dest: /etc/portage/package.use/10-logrotate
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+- name: Install tool to rotate, compress, and mails system logs
+  expeditioneer.gentoo.portage:
+    package: app-admin/logrotate
+    state: present
+  become: true
+
+- name: Create logrotate.conf
+  ansible.builtin.template:
+    src: logrotate.conf.j2
+    dest: /etc/logrotate.conf
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+- name: Create split configuration files
+  ansible.builtin.template:
+    src: '{{ item }}'
+    dest: "/etc/logrotate.d/{{ item | replace('.j2', '') }}"
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  loop:
+    - btmp.j2
+    - wtmp.j2
+
+- name: Start and enable logrotate.timer
+  ansible.builtin.systemd:
+    name: logrotate.timer
+    state: started
+    enabled: yes
+  become: true

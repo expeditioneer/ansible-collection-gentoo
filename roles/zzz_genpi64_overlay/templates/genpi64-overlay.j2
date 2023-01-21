@@ -1,0 +1,12 @@
+#
+# {{ ansible_managed }}
+#
+
+[genpi64]
+location = /var/db/repos/genpi64
+sync-type = git
+sync-uri = https://github.com/GenPi64/genpi64-overlay.git
+auto-sync = yes
+priority = 1000
+masters = gentoo
+thin-manifests = true

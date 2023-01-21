@@ -1,0 +1,112 @@
+---
+
+- name: assert that mandatory variables are defined
+  ansible.builtin.assert:
+    that:
+      - unifi_nginx_configuration_dir is defined
+      - nginx_configuration_directory is defined
+
+- name: accept for 'net-wireless/unifi' required 'ubiquiti' license
+  expeditioneer.gentoo.license:
+    package: net-wireless/unifi
+    license: ubiquiti
+  become: true
+
+- name: Add keywords for unifi required packages
+  ansible.builtin.template:
+    src: unifi.accept_keywords.j2
+    dest: /etc/portage/package.accept_keywords/60-unifi
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+- name: Configure unifi use-flags
+  ansible.builtin.template:
+    src: unifi.useflags.j2
+    dest: /etc/portage/package.use/60-unifi
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+- name: Create necessary directories for esphome
+  ansible.builtin.file:
+    path: '{{ directory.path }}'
+    state: directory
+    owner: "{{ directory.owner | default('unifi') }}"
+    group: "{{ directory.group | default('unifi') }}"
+    mode: 0750
+  loop:
+    - { path: '{{ unifi_nginx_configuration_dir }}', owner: nginx, group: nginx }
+  loop_control:
+    loop_var: directory
+
+- name: Install Management Controller for Ubiquiti Networks UniFi APs
+  expeditioneer.gentoo.portage:
+    package: net-wireless/unifi
+  become: true
+
+- name: Start and enable unifi.service
+  ansible.builtin.systemd:
+    name: unifi
+    state: started
+    enabled: yes
+  become: true
+
+- name: Create firewalld service
+  ansible.builtin.template:
+    src: unifi.firewalld.service.j2
+    dest: /etc/firewalld/services/unifi.xml
+    owner: root
+    group: root
+    mode: 0640
+  become: true
+
+- name: Allow unifi through firewall
+  ansible.posix.firewalld:
+    service: unifi
+    immediate: yes
+    permanent: yes
+    state: enabled
+  become: true
+
+- name: Create nginx configuration for unifi
+  ansible.builtin.template:
+    src: nginx.unifi.conf.j2
+    dest: '{{ nginx_configuration_directory }}/unifi.conf'
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  notify: restart NGINX
+
+- name: Create nginx configuration snippets for unifi
+  ansible.builtin.template:
+    src: '{{ item.src }}'
+    dest: '{{ unifi_nginx_configuration_dir }}/{{ item.dest }}'
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  notify: restart NGINX
+  loop:
+    - { src: nginx.unifi.locations.conf.j2, dest: locations.conf }
+
+- name: Update unifi HTTPS certificate
+  ansible.builtin.copy:
+    src: '{{ file.name }}'
+    dest: "/etc/ssl/nginx/{{ file.name | split('/') | last }}"
+    owner: root
+    group: root
+    mode: '{{ file.mode }}'
+  become: true
+  notify: restart NGINX
+  loop:
+    - { name: '{{ unifi_https_certificate_file }}',  mode: '0644' }
+    - { name: '{{ unifi_https_key_file }}', mode: '0600' }
+  loop_control:
+    loop_var: file
+  when:
+    - unifi_https_certificate_file is defined
+    - unifi_https_key_file is defined

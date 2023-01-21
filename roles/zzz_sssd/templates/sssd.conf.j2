@@ -1,0 +1,17 @@
+#
+# {{ ansible_managed }}
+#
+
+[sssd]
+config_file_version = 2
+domains = {{ domain | lower }}
+services = nss, pam
+
+[nss]
+filter_users = root,ldap
+
+[domain/{{ domain | lower }}]
+id_provider = ldap
+ldap_uri = ldap://ldap.{{ domain }}
+ldap_search_base = dc={{ domain | lower | split('.') | join(',dc=') }}
+ldap_tls_reqcert = demand

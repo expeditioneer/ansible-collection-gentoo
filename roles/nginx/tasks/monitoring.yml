@@ -1,0 +1,79 @@
+---
+
+# TODO: rework necessary before activating
+
+# hard coded arm64 - should be ARCH
+- name: download NGINX prometheus exporter package
+  ansible.builtin.get_url:
+    url: 'https://github.com/nginxinc/nginx-prometheus-exporter/releases/download/v0.11.0/nginx-prometheus-exporter_0.11.0_linux_arm64.tar.gz'
+    remote_src: yes
+    force_basic_auth: yes
+    dest: /tmp/
+    owner: node_exporter
+    group: node_exporter
+    mode: 0644
+  become: true
+
+- name: get current nginx-prometheus-exporter installed version
+  ansible.builtin.find:
+    paths: /usr/local/bin/
+    patterns: 'nginx-prometheus-exporter.*'
+    use_regex: yes
+    file_type: any
+  register: nginx_prometheus_exporter
+
+- name: remove old nginx-prometheus-exporter symlink and current installed version
+  ansible.builtin.file:
+    path: '{{ item.path }}'
+    state: absent
+  become: true
+  with_items: "{{ nginx_prometheus_exporter['files'] }}"
+
+- name: extract NGINX prometheus exporter package
+  ansible.builtin.unarchive:
+    src: '/tmp/nginx-prometheus-exporter-{{ nginx_prometheus_exporter.version }}-linux-amd64.tar.gz'
+    dest: /usr/local/bin/
+    remote_src: yes
+    owner: node_exporter
+    group: node_exporter
+  become: true
+  notify: restart NGINX prometheus exporter
+
+- name: 'remove nginx-prometheus-exporter-{{ nginx_prometheus_exporter.version }}.linux-arm64.tar.gz file'
+  ansible.builtin.file:
+    path: '/tmp/nginx-prometheus-exporter-{{ nginx_prometheus_exporter.version }}.linux-arm64.tar.gz'
+    state: absent
+  become: true
+
+- name: 'rename nginx-prometheus-exporter to nginx-prometheus-exporter-{{ nginx_prometheus_exporter.version }}'
+  ansible.builtin.shell: 'mv nginx-prometheus-exporter nginx-prometheus-exporter-{{ nginx_prometheus_exporter.version }}'
+  args:
+    chdir: /usr/local/bin/
+  become: true
+
+- name: set symlink to current version
+  ansible.builtin.file:
+    src: '/usr/local/bin/nginx-prometheus-exporter-{{ nginx_prometheus_exporter.version }}'
+    dest: /usr/local/bin/nginx-prometheus-exporter
+    state: link
+    owner: node_exporter
+    group: node_exporter
+  become: true
+  notify: restart NGINX prometheus exporter
+
+- ansible.builtin.include_tasks: shared/add-configuration-for-default-server-block.yaml
+  vars:
+    template_name: nginx/monitoring.conf.j2
+    config_file_name: monitoring.conf
+
+- ansible.builtin.include_role:
+    name: systemd
+    tasks_from: shared/add-and-enable-custom-systemd-service
+  vars:
+    service: monitoring/nginx-prometheus-exporter.service.j2
+
+- ansible.builtin.include_role:
+    name: firewall
+    tasks_from: shared/add-and-enable-custom-firewalld-service
+  vars:
+    service: monitoring/nginx-prometheus-exporter.xml.j2

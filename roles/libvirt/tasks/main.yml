@@ -1,0 +1,26 @@
+---
+
+- name: Configure use flags
+  ansible.builtin.template:
+    src: libvirt.useflags.j2
+    dest: /etc/portage/package.use/30-libvirt
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+- name: Install C toolkit to manipulate virtual machines
+  expeditioneer.gentoo.portage:
+    package: app-emulation/libvirt
+  become: true
+
+- name: Enable and start libvirtd
+  ansible.builtin.systemd:
+    name: libvirtd
+    state: started
+    enabled: yes
+  become: true
+
+#TODO: add to /etc/portage/make.conf - clever approach needed
+#QEMU_SOFTMMU_TARGETS="aarch64 arm x86_64"
+#QEMU_USER_TARGETS="aarch64 arm x86_64"

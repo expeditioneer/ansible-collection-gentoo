@@ -1,0 +1,38 @@
+---
+
+- name: assert that mandatory variables are defined
+  ansible.builtin.assert:
+    that:
+      - dracut_split_configuration_dir is defined
+
+- name: Install initramfs required packages
+  expeditioneer.gentoo.portage:
+    package: app-arch/lz4
+  become: true
+
+- name: Install generic initramfs generation tool
+  expeditioneer.gentoo.portage:
+    package: sys-kernel/dracut
+  become: true
+
+- name: 'Create {{ dracut_split_configuration_dir }} directory'
+  ansible.builtin.file:
+    path: '{{ dracut_split_configuration_dir }}'
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+# TODO: compression should be arch dependend set (x86 -> lz4, aarch64 -> lzo
+- name: Create split configuration files
+  ansible.builtin.template:
+    src: 'conf.d/{{ item }}'
+    dest: "{{ dracut_split_configuration_dir }}/{{ item | replace('.j2', '') }}"
+    owner: root
+    group: root
+    mode: 0640
+  become: true
+  loop:
+    - btrfs.conf.j2
+    - compression.conf.j2
+    - hostonly.conf.j2

@@ -1,0 +1,8 @@
+#
+# {{ ansible_managed }}
+#
+
+location / {
+    uwsgi_pass unix:{{ uwsgi.run_directory }}/pgadmin4.sock;
+    include uwsgi_params;
+}

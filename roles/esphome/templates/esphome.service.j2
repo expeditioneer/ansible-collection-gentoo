@@ -1,0 +1,19 @@
+#
+# {{ ansible_managed }}
+#
+
+[Unit]
+Description=ESPHome Dashboard
+After=network-online.target
+
+[Service]
+Type=simple
+User=esphome
+Group=esphome
+Environment="ESPHOME_DASHBOARD_USE_PING=true"
+Environment="PATH={{ esphome_install_dir }}/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+WorkingDirectory={{ esphome_install_dir }}
+ExecStart={{ esphome_install_dir }}/bin/esphome dashboard --socket {{ esphome_run_directory }}/esphome.sock --username {{ esphome_username }} --password {{ esphome_password }} {{ esphome_configuration_dir }}
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,8 @@
+---
+
+participating_hosts:
+    - name: workstation.home.arpa
+      limit: 15
+      options:
+          - cpp
+          - lzo

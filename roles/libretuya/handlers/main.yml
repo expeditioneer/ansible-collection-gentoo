@@ -1,0 +1,13 @@
+---
+
+- name: Restart libretuya dashboard systemd service
+  ansible.builtin.systemd:
+    name: libretuya
+    state: restarted
+    daemon_reload: yes
+  become: true
+
+- name: Create systemd-tmpfiles for libretuya
+  ansible.builtin.shell:
+    cmd: systemd-tmpfiles --create /etc/tmpfiles.d/libretuya.conf
+  become: true

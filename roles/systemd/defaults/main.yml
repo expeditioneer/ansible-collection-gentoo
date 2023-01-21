@@ -1,0 +1,10 @@
+---
+
+timeservers:
+  - ptbtime1.ptb.de
+  - ptbtime2.ptb.de
+  - ptbtime3.ptb.de
+
+dns:
+  server: 172.16.0.1
+  domain: home.arpa

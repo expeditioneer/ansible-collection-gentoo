@@ -1,0 +1,40 @@
+---
+
+- name: Install package to distribute compilation of C code across several machines on a network
+  expeditioneer.gentoo.portage:
+    package: sys-devel/distcc
+  become: true
+
+- name: Create participating hosts file
+  ansible.builtin.template:
+    src: hosts.j2
+    dest: /etc/distcc/hosts
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+- name: Create systemd service override for distccd
+  ansible.builtin.template:
+    src: distcc.systemd.service.j2
+    dest: /etc/systemd/system/distccd.service.d/10-override.conf
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  notify: restart systemd distccd service
+
+- name: Allow distccd through firewall
+  ansible.posix.firewalld:
+    service: distcc
+    immediate: yes
+    permanent: yes
+    state: enabled
+  become: true
+
+- name: Start and enable distccd.service
+  ansible.builtin.systemd:
+    name: distccd
+    state: started
+    enabled: yes
+  become: true

@@ -1,0 +1,55 @@
+---
+
+- name: Check that mandatory variables are defined
+  ansible.builtin.assert:
+    that:
+      - nginx_configuration_directory is defined
+      - nginx_include_directory is defined
+      - root_certificate is defined
+      - intermediate_certificate is defined
+
+- name: Create necessary directories for nginx
+  ansible.builtin.file:
+    path: '/etc/nginx/{{ item }}'
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  become: true
+  loop:
+    - conf.d
+    - include
+
+- name: Create trusted SSL certificate chain
+  ansible.builtin.template:
+    src: trusted_certificate_chain.pem.j2
+    dest: /etc/ssl/nginx/trusted_certificate_chain.pem
+
+- name: Create nginx include configuration files
+  ansible.builtin.template:
+    src: '{{ item }}'
+    dest: "{{ nginx_include_directory }}/{{ item | replace('.j2', '') }}"
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  loop:
+    - map.conf.j2
+    - ssl_settings.conf.j2
+    - gzip_settings.conf.j2
+
+- name: Create nginx main configuration file
+  ansible.builtin.template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+- name: Start and enable NGINX
+  ansible.builtin.systemd:
+    name: nginx
+    enabled: yes
+    state: started
+  become: true

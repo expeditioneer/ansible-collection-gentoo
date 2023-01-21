@@ -1,0 +1,15 @@
+---
+
+- name: Assert that necessary variables are defined
+  ansible.builtin.assert:
+    that:
+      - raspberry_pi['compile_flags'] is defined
+
+- name: create portage make.conf
+  ansible.builtin.template:
+    src: portage/make.conf.j2
+    dest: /etc/portage/make.conf
+    owner: root
+    group: root
+    mode: 0644
+  become: true

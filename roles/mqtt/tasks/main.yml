@@ -1,0 +1,123 @@
+---
+
+- name: assert that mandatory variables are defined
+  ansible.builtin.assert:
+    that:
+      - mosquitto_configuration_dir is defined
+      - mosquitto_run_dir is defined
+      - mosquitto_split_configuration_dir is defined
+
+- name: Add keywords for MQTT required packages
+  ansible.builtin.template:
+    src: mqtt.accept_keywords.j2
+    dest: /etc/portage/package.accept_keywords/60-mqtt
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+- name: Install Open Source MQTT v3 Broker
+  expeditioneer.gentoo.portage:
+    package: app-misc/mosquitto
+  become: true
+
+- name: Create missing tmpfiles.d mongodb configuration
+  ansible.builtin.template:
+    src: mosquitto.tmpfiles.conf.j2
+    dest: /etc/tmpfiles.d/mosquitto.conf
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+- name: 'Correct permissions on {{ mosquitto_configuration_dir }}'
+  ansible.builtin.file:
+    path: '{{ mosquitto_configuration_dir }}'
+    owner: mosquitto
+    group: mosquitto
+    mode: 0750
+    state: directory
+  become: true
+
+- name: Create mosquitto.conf
+  ansible.builtin.template:
+    src: mosquitto.conf.j2
+    dest: /etc/mosquitto/mosquitto.conf
+    owner: mosquitto
+    group: mosquitto
+    mode: 0640
+  become: true
+  notify: restart systemd mosquitto service
+
+- name: 'ensure {{ mosquitto_split_configuration_dir }} directory exists'
+  ansible.builtin.file:
+    path: '{{ mosquitto_split_configuration_dir }}'
+    owner: mosquitto
+    group: mosquitto
+    mode: 0750
+    state: directory
+  become: true
+
+- name: Create split configuration files
+  ansible.builtin.template:
+    src: 'conf.d/{{ item }}'
+    dest: "{{ mosquitto_split_configuration_dir }}/{{ item | replace('.j2', '') }}"
+    owner: mosquitto
+    group: mosquitto
+    mode: 0640
+  become: true
+  notify: restart systemd mosquitto service
+  loop:
+    - 01-general.conf.j2
+    - 02-listeners.conf.j2
+    - 05-persistence.conf.j2
+    - 10-logging.conf.j2
+
+- name: Create pwfile
+  ansible.builtin.template:
+    src: pwfile.j2
+    dest: '{{ mosquitto_configuration_dir }}/pwfile'
+    owner: mosquitto
+    group: mosquitto
+    mode: 0640
+  become: true
+  notify: restart systemd mosquitto service
+
+- name: remove obsolete configuration files
+  ansible.builtin.file:
+    path: '/etc/mosquitto/{{ item }}'
+    state: absent
+  become: true
+  loop:
+    - mosquitto.conf.example
+
+- name: ensure /etc/systemd/system/mosquitto.service.d directory exists
+  ansible.builtin.file:
+    path: /etc/systemd/system/mosquitto.service.d
+    state: directory
+  become: true
+
+- name: Create systemd service override for mosquitto
+  ansible.builtin.template:
+    src: mosquitto.systemd.service.j2
+    dest: /etc/systemd/system/mosquitto.service.d/10-mosquitto.conf
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  notify: restart systemd mosquitto service
+
+- name: Start and enable mosquitto.service
+  ansible.builtin.systemd:
+    name: mosquitto
+    state: started
+    enabled: yes
+  become: true
+
+- name: Allow MQTT through firewall
+  ansible.posix.firewalld:
+    service: mqtt
+    immediate: yes
+    permanent: yes
+    state: enabled
+  become: true

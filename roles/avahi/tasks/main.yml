@@ -1,0 +1,22 @@
+---
+
+- name: Install avahi to facilitate service discovery on the local network
+  expeditioneer.gentoo.portage:
+    package: net-dns/avahi
+  become: true
+  notify: Restart avahi-daemon systemd service
+
+- name: Enable and start avahi-daemon
+  ansible.builtin.systemd:
+    name: avahi-daemon
+    state: started
+    enabled: yes
+  become: true
+
+- name: Allow multicast DNS in firewall
+  ansible.posix.firewalld:
+    service: mdns
+    immediate: yes
+    permanent: yes
+    state: enabled
+  become: true

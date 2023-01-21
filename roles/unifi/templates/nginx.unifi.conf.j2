@@ -1,0 +1,24 @@
+#
+# {{ ansible_managed }}
+#
+
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name unifi unifi.home.arpa;
+    return 301 https://unifi.home.arpa$request_uri;
+}
+
+server {
+    server_name unifi.home.arpa;
+
+    ssl_certificate     /etc/ssl/nginx/unifi.home.arpa.crt;
+    ssl_certificate_key /etc/ssl/nginx/unifi.home.arpa.key;
+
+    access_log	/var/log/nginx/unifi.access.log;
+    error_log	/var/log/nginx/unifi.error.log;
+
+    include /etc/nginx/include/ssl_settings.conf;
+    include /etc/nginx/conf.d/unifi/locations.conf;
+}

@@ -1,0 +1,6 @@
+#
+# {{ ansible_managed }}
+#
+
+[Time]
+NTP={{  timeservers | join(' ') }}

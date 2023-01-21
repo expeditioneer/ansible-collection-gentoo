@@ -1,0 +1,75 @@
+---
+
+- name: Check that mandatory variables are defined
+  ansible.builtin.assert:
+    that:
+      - bind_forwarders is defined
+      - bind_name_server.configuration_directory is defined
+      - bind_name_server.trusted_networks is defined
+
+# TODO: use ddns-confgen or tsig-keygen for ddns key
+- name: Generate necessary keys
+  ansible.builtin.command:
+    cmd: rndc-confgen -A hmac-sha512 -a -k {{ item }}-key -c "{{ bind_name_server.configuration_directory }}/{{ item }}.key"
+    creates: "{{ bind_name_server.configuration_directory }}/{{ item }}.key"
+  loop:
+    - ddns
+    - rndc
+
+- name: Fix permissions for keys
+  ansible.builtin.file:
+    path: '/etc/bind/{{ item }}'
+    owner: root
+    group: named
+    mode: 0640
+  become: true
+  loop:
+    - ddns.key
+    - rndc.key
+
+- name: Create named.conf
+  ansible.builtin.template:
+    src: named.conf.j2
+    dest: '{{ bind_name_server.configuration_directory }}/named.conf'
+    owner: root
+    group: named
+    mode: 0640
+    validate: named-checkconf %s
+  become: true
+  notify:
+    - Restart bind name server
+
+- name: Install updater for automatic update of root hints
+  ansible.builtin.template:
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
+    owner: root
+    group: root
+    mode: '{{ item.mode }}'
+  become: true
+  loop:
+    - { src: named-update-root-hints.j2, dest: /usr/local/sbin/named-update-root-hints, mode: '0700' }
+    - { src: named-update-root-hints.service.j2, dest: /etc/systemd/system/named-update-root-hints.service, mode: '0644' }
+    - { src: named-update-root-hints.timer.j2, dest: /etc/systemd/system/named-update-root-hints.timer, mode: '0644' }
+
+- name: Enable and start systemd timer for automatic update of root hints
+  ansible.builtin.systemd:
+    name: named-update-root-hints.timer
+    state: started
+    enabled: yes
+  become: true
+
+- name: Enable systemd service for Internet domain name server
+  ansible.builtin.systemd:
+    name: named
+    state: started
+    enabled: yes
+  become: true
+
+- name: Allow DNS queries through firewall
+  ansible.posix.firewalld:
+    service: dns
+    immediate: yes
+    permanent: yes
+    state: enabled
+  become: true

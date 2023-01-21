@@ -1,0 +1,3 @@
+---
+
+unifi_nginx_configuration_dir: '{{ nginx_configuration_directory }}/unifi'

@@ -1,0 +1,10 @@
+//
+// {{ ansible_managed }}
+//
+
+zone "0.16.172.in-addr.arpa" {
+    type master;
+    file "/var/bind/dyn/0.16.172.in-addr.arpa.dynamic";
+    allow-query { trusted; };
+    allow-update { key ddns-key; };
+};

@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+#
+# {{ ansible_managed }}
+#
+
+set -euo pipefail
+
+named_cache="/var/bind/named.cache"
+
+if [ -w "${named_cache}" ]; then
+    curl --silent https://www.internic.net/domain/named.root --output "${named_cache}"
+    echo "Updating root hints successfully finished"
+    echo "Reloading Zone Information ..."
+    rndc reload
+else
+    echo "You need write permissions for ${named_cache}"
+    exit 10
+fi

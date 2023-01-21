@@ -1,0 +1,33 @@
+---
+
+# TODO unmask required flags
+# /etc/portage/profile/package.use.mask
+# net-fs/samba	-addc -addns -ads -cluster -python -test
+
+- name: SAMBA - configure use flags
+  ansible.builtin.template:
+    src: samba/samba.useflags.j2
+    dest: /etc/portage/package.use/60-samba
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+- name: SAMBA - install samba package
+  ansible.builtin.package:
+    name: net-fs/samba
+  become: true
+
+# TODO: execute domain configuration if not already executed (/etc/samba/smb.conf exists)
+
+- name: SAMBA - allow necessary services through firewall
+  ansible.posix.firewalld:
+    service: '{{ item }}'
+    immediate: yes
+    permanent: yes
+    state: enabled
+  become: true
+  loop:
+    - samba
+    - samba-dc
+    - kerberos

@@ -1,0 +1,6 @@
+---
+
+dependencies:
+  - role: expeditioneer.gentoo.nginx
+  - role: expeditioneer.gentoo.redis
+  - role: expeditioneer.gentoo.postgresql

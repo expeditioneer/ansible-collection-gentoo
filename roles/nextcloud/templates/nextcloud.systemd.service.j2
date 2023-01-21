@@ -1,0 +1,14 @@
+#
+# {{ ansible_managed }}
+#
+
+[Unit]
+Description=Nextcloud background processes
+
+[Service]
+User=nginx
+ExecStart=/usr/bin/php -f {{ nextcloud_install_dir }}/cron.php
+KillMode=process
+
+[Install]
+WantedBy=basic.target

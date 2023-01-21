@@ -1,0 +1,26 @@
+---
+
+- name: Assert that mandatory variables are defined
+  ansible.builtin.assert:
+    that:
+      - certificates_directory is defined
+
+- name: Create certificate directory
+  ansible.builtin.file:
+    path: '{{ certificates_directory }}'
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  become: true
+
+- name: Add trust to desired certificates
+  ansible.builtin.copy:
+    src: '{{ item }}'
+    dest: '{{ certificates_directory }}/{{ item }}'
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  notify: update ca-certificates trust
+  loop: '{{ trusted_certificates }}'

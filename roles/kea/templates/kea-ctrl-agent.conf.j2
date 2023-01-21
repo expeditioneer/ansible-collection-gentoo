@@ -1,0 +1,30 @@
+//
+// {{  ansible_managed }}
+//
+{
+"Control-agent": {
+    "http-host": "127.0.0.1",
+    "http-port": 8000,
+
+    "control-sockets": {
+        "dhcp4": {
+            "socket-type": "unix",
+            "socket-name": "/run/kea/{{ kea.dhcpv4_ctrl_socket_name }}"
+        },
+        "dhcp6": {
+            "socket-type": "unix",
+            "socket-name": "/run/kea/{{ kea.dhcpv6_ctrl_socket_name }}"
+        },
+        "d2": {
+            "socket-type": "unix",
+            "socket-name": "/run/kea/{{ kea.ddns_ctrl_socket_name }}"
+        }
+    },
+
+    "loggers": [ {
+            "name": "kea-ctrl-agent",
+            "severity": "INFO"
+        } ]
+    }
+}
+

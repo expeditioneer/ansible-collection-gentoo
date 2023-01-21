@@ -1,0 +1,15 @@
+#
+# {{ ansible_managed }}
+#
+
+[Unit]
+Description=Socket for uWSGI %i
+
+[Socket]
+ListenStream={{ uwsgi.run_directory }}/%i.socket
+SocketUser=www-%i
+SocketGroup=nginx
+SocketMode=0660
+
+[Install]
+WantedBy=sockets.target

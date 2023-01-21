@@ -1,0 +1,26 @@
+---
+
+# TODO: set current NTP as FallbackNTP and use subnet NTP as main source
+# TODO: also use split configuration files
+
+- name: Check that mandatory variables are defined
+  ansible.builtin.assert:
+    that:
+      - timeservers is defined
+
+- name: Create timesyncd.conf
+  ansible.builtin.template:
+    src: timesyncd.conf.j2
+    dest: /etc/systemd/timesyncd.conf
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  notify: restart systemd-timesyncd service
+
+- name: Start and enable systemd-timesyncd.service
+  ansible.builtin.systemd:
+    name: systemd-timesyncd
+    state: started
+    enabled: yes
+  become: true

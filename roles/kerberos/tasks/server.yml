@@ -1,0 +1,117 @@
+---
+# see https://deepdoc.at/dokuwiki/doku.php?id=gentoo:kerberos_mit
+
+- name: Assert that necessary variables are defined
+  ansible.builtin.assert:
+    that:
+      - domain is defined
+      - kerberos is defined
+      - kerberos.default_tkt_enctypes is defined
+      - kerberos.default_tgs_enctypes is defined
+      - kerberos.supported_encryption_types is defined
+
+- name: configure use flags
+  ansible.builtin.template:
+    src: krb5.server.useflags.j2
+    dest: /etc/portage/package.use/60-kerberos-server
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+- name: Install MIT Kerberos V
+  expeditioneer.gentoo.portage:
+    package: app-crypt/mit-krb5
+    state: present
+  become: true
+
+- name: create configuration files
+  ansible.builtin.template:
+    src: '{{ item }}'
+    dest: "/var/lib/krb5kdc/{{ item | regex_replace('.j2$', '') }}"
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  loop:
+    - kadm5.acl.j2
+    - kdc.conf.j2
+
+- name: remove kdc.conf.example file
+  ansible.builtin.file:
+    name: /var/lib/krb5kdc/kdc.conf.example
+    state: absent
+  become: true
+
+
+#ldapmodify -Q -Y EXTERNAL -H ldapi:/// <<EOF
+#dn: olcDatabase={1}mdb,cn=config
+#add: olcAccess
+#olcAccess: {0}to attrs=krbPrincipalKey
+#  by anonymous auth
+#  by dn.exact="uid=kdc,ou=kerberos,ou=services,dc=home,dc=arpa" read
+#  by dn.exact="uid=kadmin,ou=kerberos,ou=services,dc=home,dc=arpa" write
+#  by self write
+#  by * none
+#-
+#add: olcAccess
+#olcAccess: {1}to dn.subtree="cn=krbContainer,ou=kerberos,ou=services,dc=home,dc=arpa"
+#  by dn.exact="uid=kdc,ou=kerberos,ou=services,dc=home,dc=arpa" read
+#  by dn.exact="uid=kadmin,ou=kerberos,ou=services,dc=home,dc=arpa" write
+#  by * none
+#EOF
+#-
+#add: olcAccess
+#olcAccess: {2}to dn.subtree="ou=users,dc=home,dc=arpa"
+#  by dn.exact="uid=kdc,ou=kerberos,ou=services,dc=home,dc=arpa" write
+#  by dn.exact="uid=kadmin,ou=kerberos,ou=services,dc=home,dc=arpa" write
+#  by * none
+#EOF
+
+# kdb5_ldap_util -D cn=manager,dc=home,dc=arpa create -subtrees dc=home,dc=arpa -r HOME.ARPA -s -H ldapi:///
+# kdb5_ldap_util -D cn=manager,dc=home,dc=arpa stashsrvpw -f /var/lib/krb5kdc/service.keyfile uid=kdc,ou=kerberos,ou=services,dc=home,dc=arpa
+# kdb5_ldap_util -D cn=manager,dc=home,dc=arpa stashsrvpw -f /var/lib/krb5kdc/service.keyfile uid=kadmin,ou=kerberos,ou=services,dc=home,dc=arpa
+
+#- name: Enable and start necessary kerberos systemd units
+#  ansible.builtin.systemd:
+#    name: '{{ item }}'
+#    state: started
+#    enabled: yes
+#  become: true
+#  loop:
+#    - mit-krb5kdc.service
+#    - mit-krb5kadmind.service
+#    - mit-krb5kpropd.socket
+# TODO: clarify
+# this should be activated through socket
+# mit-krb5kpropd.service
+
+- name: Allow kerberos required services through firewall
+  ansible.posix.firewalld:
+    service: kerberos
+    immediate: yes
+    permanent: yes
+    state: enabled
+  become: true
+  loop:
+    - kadmin
+    - kerberos
+
+# ON Hydrogen (KDC Server)
+# kadmin.local
+# > add_principal -randkey host/hydrogen.home.arpa
+# > ktadd host/hydrogen.home.arpa
+# > addprinc root/admin
+
+# ON Carbon
+# kadmin
+# > add_principal -randkey host/carbon.home.arpa
+# > ktadd -k /etc/krb5.keytab host/carbon.home.arpa
+
+
+# ON Hydrogen (KDC Server)
+# addprinc -randkey ldap/ldap.home.arpa
+# addprinc -randkey ldap/hydrogen.home.arpa
+# ktadd -k /etc/krb5.ldap.keytab ldap/ldap.home.arpa
+
+# kadmin.local:  addprinc -x dn=cn=dennis,ou=users,dc=home,dc=arpa dennis

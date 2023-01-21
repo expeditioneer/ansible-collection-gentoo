@@ -1,0 +1,20 @@
+#
+# {{ ansible_managed }}
+#
+
+[Unit]
+Description=Home Assistant
+After=network-online.target
+
+[Service]
+Type=simple
+User=homeassistant
+Group=homeassistant
+Environment="PATH=/usr/local/homeassistant/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/bin"
+WorkingDirectory=/usr/local/homeassistant
+ExecStart=/usr/local/homeassistant/bin/hass --config /etc/homeassistant --log-file /var/log/homeassistant/homeassistant.log
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target

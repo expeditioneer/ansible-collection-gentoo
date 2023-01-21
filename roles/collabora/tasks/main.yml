@@ -1,0 +1,56 @@
+---
+
+- name: assert that mandatory variables are defined
+  ansible.builtin.assert:
+    that:
+      - collabora_nginx_configuration_dir is defined
+
+- name: 'Create {{ collabora_nginx_configuration_dir }} directory'
+  ansible.builtin.file:
+    path: '{{ collabora_nginx_configuration_dir }}'
+    state: directory
+    owner: nginx
+    group: nginx
+    mode: 0750
+
+- name: Create nginx configuration for collabora
+  ansible.builtin.template:
+    src: nginx.collabora.conf.j2
+    dest: '{{ nginx_configuration_directory }}/collabora.conf'
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  notify: restart NGINX
+
+- name: Create nginx configuration snippets for collabora
+  ansible.builtin.template:
+    src: '{{ item.src }}'
+    dest: '{{ collabora_nginx_configuration_dir }}/{{ item.dest }}'
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  notify: restart NGINX
+  loop:
+    - { src: nginx.collabora.locations.conf.j2, dest: locations.conf }
+
+- name: Update collabora HTTPS certificate
+  ansible.builtin.copy:
+    src: '{{ file.name }}'
+    dest: "/etc/ssl/nginx/{{ file.name | split('/') | last }}"
+    owner: root
+    group: root
+    mode: '{{ file.mode }}'
+  become: true
+  notify: restart NGINX
+  loop:
+    - { name: '{{ collabora_https_certificate_file }}',  mode: '0644' }
+    - { name: '{{ collabora_https_key_file }}', mode: '0600' }
+  loop_control:
+    loop_var: file
+  when:
+    - collabora_https_certificate_file is defined
+    - collabora_https_key_file is defined
+
+# podman run -t -d -p 127.0.0.1:9980:9980 -e "extra_params=--o:ssl.enable=false" --restart always collabora/code

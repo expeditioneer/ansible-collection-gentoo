@@ -1,0 +1,5 @@
+---
+
+mosquitto_configuration_dir: /etc/mosquitto
+mosquitto_run_dir: /run/mosquitto
+mosquitto_split_configuration_dir: '{{ mosquitto_configuration_dir }}/conf.d'

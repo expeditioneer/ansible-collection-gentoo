@@ -1,0 +1,43 @@
+---
+
+- name: Check that mandatory variables are defined
+  ansible.builtin.assert:
+    that:
+      - nginx_configuration_directory is defined
+
+- name: Configure NGINX high performance http and reverse proxy server use flags
+  ansible.builtin.template:
+    src: nginx.useflags.j2
+    dest: /etc/portage/package.use/50-nginx
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+- name: Install NGINX high performance http and reverse proxy server
+  expeditioneer.gentoo.portage:
+    package: www-servers/nginx
+  become: true
+
+- name: Remove obsolete NGINX files
+  ansible.builtin.file:
+    name: '{{ item }}'
+    state: absent
+  become: true
+  loop:
+    - /etc/nginx/mime.types
+    - /etc/ssl/nginx/nginx.crt
+    - /etc/ssl/nginx/nginx.csr
+    - /etc/ssl/nginx/nginx.key
+    - /etc/ssl/nginx/nginx.pem
+
+- name: Allow http(s) in firewall
+  ansible.posix.firewalld:
+    service: '{{ item }}'
+    immediate: yes
+    permanent: yes
+    state: enabled
+  become: true
+  with_items:
+    - http
+    - https

@@ -1,0 +1,15 @@
+#
+# {{ ansible_managed }}
+#
+
+[Unit]
+
+Description=Update the ESPHome installation to the latest available version
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/esphome/bin/pip install --upgrade esphome
+User=esphome
+Group=esphome
+Environment="PATH=/usr/local/esphome/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/bin"
+WorkingDirectory=/usr/local/esphome

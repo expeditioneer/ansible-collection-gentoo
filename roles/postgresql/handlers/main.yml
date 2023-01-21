@@ -1,0 +1,13 @@
+---
+
+- name: restart postgresql system service
+  ansible.builtin.systemd:
+    name: 'postgresql-{{ postgresql_slot.stdout }}'
+    state: restarted
+    daemon_reload: yes
+  become: true
+
+- name: create volatile and temporary files and directory for uwsgi
+  ansible.builtin.shell:
+    cmd: systemd-tmpfiles --create /etc/tmpfiles.d/uwsgi.conf
+  become: true

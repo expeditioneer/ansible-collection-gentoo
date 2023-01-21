@@ -1,0 +1,32 @@
+---
+
+# TODO: move this to gentoo prepare role (or something similar)
+- name: Ensure /etc/portage/package.accept_keywords directory exists
+  ansible.builtin.file:
+    path: /etc/portage/package.accept_keywords
+    state: directory
+  become: true
+
+- name: Add keywords for 389-ds required packages
+  ansible.builtin.template:
+    src: 389-ds.accept_keywords.j2
+    dest: /etc/portage/package.accept_keywords/60-389-ds
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+- name: Configure use flags
+  ansible.builtin.template:
+    src: 389-ds.useflags.j2
+    dest: /etc/portage/package.use/60-389-ds
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+- name: install openldap package
+  ansible.builtin.package:
+    name: net-nds/389-ds-base
+  become: true
+

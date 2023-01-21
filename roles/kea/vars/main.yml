@@ -1,0 +1,6 @@
+---
+
+kea:
+  dhcpv4_ctrl_socket_name: kea4-ctrl-socket
+  dhcpv6_ctrl_socket_name: kea6-ctrl-socket
+  ddns_ctrl_socket_name: kea-ddns-ctrl-socket

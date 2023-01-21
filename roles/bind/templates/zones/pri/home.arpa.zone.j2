@@ -1,0 +1,25 @@
+;
+; {{  ansible_managed }}
+;
+
+hydrogen        A       172.16.0.1
+opnsense        A       172.16.0.254
+
+kdc             CNAME   hydrogen
+ldap            CNAME   hydrogen
+postgresql      CNAME   hydrogen
+
+collabora		CNAME	carbon
+nextcloud		CNAME	carbon
+nfs             CNAME   carbon
+
+esphome         CNAME   oxygen
+homeassistant   CNAME   oxygen
+libretuya       CNAME   oxygen
+unifi           CNAME   oxygen
+
+mqtt            CNAME   homeassistant
+
+gateway         CNAME   opnsense
+ntp             CNAME	opnsense
+proxy	        CNAME	opnsense

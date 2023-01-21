@@ -1,0 +1,26 @@
+#
+# {{ ansible_managed }}
+#
+
+[libdefaults]
+  default_realm = {{ domain | upper }}
+  dns_lookup_realm = true
+  dns_lookup_kdc = true
+  ticket_lifetime = 24h
+  renew_lifetime = 7d
+  rdns = false
+  forwardable = yes
+
+[realms]
+  {{ domain | upper }} = {
+    kdc = kdc.{{ domain | lower }}
+    admin_server = kdc.{{ domain | lower }}
+    default_domain = {{ domain | lower }}
+  }
+
+[domain_realm]
+  .{{ domain | lower }} = {{ domain | upper }}
+  {{ domain | lower }} = {{ domain | upper }}
+
+[logging]
+  default = FILE:/var/log/krb5libs.log

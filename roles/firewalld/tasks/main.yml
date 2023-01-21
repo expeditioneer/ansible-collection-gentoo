@@ -1,0 +1,46 @@
+---
+
+- name: Check that mandatory variables are defined
+  ansible.builtin.assert:
+    that:
+      - firewalld_public_interfaces is defined
+
+- name: Configure firewalld use-flags
+  ansible.builtin.template:
+    src: firewalld.useflags.j2
+    dest: /etc/portage/package.use/10-firewalld
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+- name: Install a firewall daemon with D-Bus interface providing a dynamic firewall
+  expeditioneer.gentoo.portage:
+    package: net-firewall/firewalld
+  become: true
+
+- name: Start and enable firewalld.service
+  ansible.builtin.systemd:
+    name: firewalld
+    state: started
+    enabled: yes
+  become: true
+
+- name: Add interfaces to public firewalld zone
+  ansible.posix.firewalld:
+    zone: public
+    interface: '{{ item }}'
+    state: enabled
+    immediate: yes
+    permanent: yes
+  become: true
+  loop: '{{ firewalld_public_interfaces }}'
+
+- name: Create firewalld custom service directory
+  ansible.builtin.file:
+    path: /etc/firewalld/services
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  become: true

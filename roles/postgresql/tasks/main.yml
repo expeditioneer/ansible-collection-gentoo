@@ -1,0 +1,13 @@
+---
+
+# TODO: rework
+#- ansible.builtin.import_tasks: postgresql.yml
+#
+#- ansible.builtin.import_tasks: uwsgi.yml
+#
+#- ansible.builtin.import_tasks: pgadmin.yml
+
+# TODO: add:
+#/var/lib/postgresql/14/data angelegt
+## dbinit
+#

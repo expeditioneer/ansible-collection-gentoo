@@ -1,0 +1,18 @@
+---
+
+- name: accept for 'dev-db/mongodb' required 'SSPL-1' license
+  expeditioneer.gentoo.license:
+    package: dev-db/mongodb
+    license: SSPL-1
+  become: true
+
+- name: Create missing tmpfiles.d mongodb configuration
+  ansible.builtin.template:
+    src: mongodb.tmpfiles.conf.j2
+    dest: /etc/tmpfiles.d/mongodb.conf
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+# crete configuration file according to jinja template

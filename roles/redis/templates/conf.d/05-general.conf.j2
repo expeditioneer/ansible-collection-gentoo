@@ -1,0 +1,35 @@
+#
+# {{ ansible_managed }}
+#
+
+################################# GENERAL #####################################
+
+supervised systemd
+
+pidfile /run/redis/redis.pid
+
+loglevel notice
+logfile ""
+
+databases 16
+
+always-show-logo no
+
+set-proc-title yes
+
+# When changing the process title, Redis uses the following template to construct
+# the modified title.
+#
+# Template variables are specified in curly brackets. The following variables are
+# supported:
+#
+# {title}           Name of process as executed if parent, or type of child process.
+# {listen-addr}     Bind address or '*' followed by TCP or TLS port listening on, or
+#                   Unix socket if only that's available.
+# {server-mode}     Special mode, i.e. "[sentinel]" or "[cluster]".
+# {port}            TCP port listening on, or 0.
+# {tls-port}        TLS port listening on, or 0.
+# {unixsocket}      Unix domain socket listening on, or "".
+# {config-file}     Name of configuration file used.
+#
+proc-title-template "{title} {listen-addr} {server-mode}"

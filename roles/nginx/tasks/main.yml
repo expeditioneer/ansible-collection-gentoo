@@ -1,0 +1,8 @@
+---
+
+- ansible.builtin.include_tasks: install-nginx.yml
+
+- ansible.builtin.import_tasks: configure-nginx.yml
+
+# TODO: requires rework
+#- import_tasks: monitoring.yml

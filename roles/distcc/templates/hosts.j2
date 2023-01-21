@@ -1,0 +1,8 @@
+#
+# {{ ansible_managed }}
+#
+
+localhost/{{ ansible_processor_count }},lzo,cpp
+{% for participating_host in participating_hosts -%}
+    {{ participating_host.name }}/{{ participating_host.limit }},{{ participating_host.options | join(',') }}
+{% endfor %}

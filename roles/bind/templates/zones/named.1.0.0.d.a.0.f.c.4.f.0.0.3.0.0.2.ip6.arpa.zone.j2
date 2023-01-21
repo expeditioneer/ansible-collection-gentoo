@@ -1,0 +1,10 @@
+//
+// {{ ansible_managed }}
+//
+
+zone "1.0.0.d.a.0.f.c.4.f.0.0.3.0.0.2.ip6.arpa" {
+    type master;
+    file "/var/bind/dyn/1.0.0.d.a.0.f.c.4.f.0.0.3.0.0.2.ip6.arpa.dynamic";
+    allow-query { trusted; };
+    allow-update { key ddns-key; };
+};

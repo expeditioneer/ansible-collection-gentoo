@@ -1,0 +1,56 @@
+---
+
+- name: Assert this is only executed on a Gentoo system
+  ansible.builtin.assert:
+    that: ansible_distribution == 'Gentoo'
+
+- name: Assert that mandatory variables are defined
+  ansible.builtin.assert:
+    that:
+      - repository_name is defined
+      - sync_uri is defined
+
+# 'auto_sync' is optional
+# 'sync_type' is optional
+# 'priority' is optional
+# todo: check auto_sync of type
+# todo: check sync_type of type
+# check if sync uri is valid uri type
+# TODO: move {{ repository_name | lower | replace('repository', '') | trim }} as custom variable to block for this
+
+- name: Create necessary directories
+  ansible.builtin.file:
+    path: '{{ item }}'
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  become: true
+  loop:
+    - /etc/portage/repos.conf
+    - "{{ default_repo_path }}/{{ repository_name | lower | replace('repository', '') | trim }}"
+
+# TODO: depending on sync type
+- name: Install git
+  expeditioneer.gentoo.portage:
+    package: dev-vcs/git
+  become: true
+  when:
+    - sync_type is defined
+    - sync_type == "git"
+
+- name: 'Add overlay {{ repository_name }}'
+  ansible.builtin.template:
+    src: overlay.conf.j2
+    dest: "/etc/portage/repos.conf/{{ repository_name | lower | replace('repository', '') | trim }}.conf"
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  register: overlay
+
+- name: 'Sync overlay {{ repository_name }}'
+  ansible.builtin.command:
+    cmd: 'emaint sync --repo {{ repository_name | trim }}'
+  become: true
+  when: overlay.changed # noqa: no-handler
