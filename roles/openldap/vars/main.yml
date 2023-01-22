@@ -1,7 +1,5 @@
 ---
 
-domain: home.arpa
-
 openldap:
   argsfile: /run/openldap/slapd.args
   pidfile: /run/openldap/slapd.pid
