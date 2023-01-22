@@ -42,6 +42,7 @@
         <option value="$MODULE_DIR$/roles/initramfs/templates" />
         <option value="$MODULE_DIR$/roles/libvirt/templates" />
         <option value="$MODULE_DIR$/roles/389ds/templates" />
+        <option value="$MODULE_DIR$/roles/preparation/templates" />
       </list>
     </option>
   </component>
