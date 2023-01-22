@@ -41,8 +41,8 @@
   become: true
 
 - name: install openldap package
-  ansible.builtin.package:
-    name: net-nds/openldap
+  expeditioneer.gentoo.portage:
+    package: net-nds/openldap
   become: true
 
 - name: Update OpenLDAP Server Daemon certificate

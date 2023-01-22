@@ -26,8 +26,8 @@
   become: true
 
 - name: Kea High-performance production grade DHCPv4 & DHCPv6 server - install package
-  ansible.builtin.package:
-    name: net-misc/kea
+  expeditioneer.gentoo.portage:
+    package: net-misc/kea
     changed_use: yes
   become: true
 

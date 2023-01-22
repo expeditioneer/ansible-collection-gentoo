@@ -25,14 +25,14 @@
   become: true
 
 - name: uWSGI server for Python web applications - install package
-  ansible.builtin.package:
-    name: www-servers/uwsgi
+  expeditioneer.gentoo.portage:
+    package: www-servers/uwsgi
     changed_use: yes
   become: true
 
 - name: uWSGI server for Python web applications - install packages for technical group
-  ansible.builtin.package:
-    name: acct-group/uwsgi
+  expeditioneer.gentoo.portage:
+    package: acct-group/uwsgi
     changed_use: yes
   become: true
 

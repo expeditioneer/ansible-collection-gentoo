@@ -1,8 +1,8 @@
 ---
 
 - name: install PostgreSQL RDBMS
-  ansible.builtin.package:
-    name: dev-db/postgresql
+  expeditioneer.gentoo.portage:
+    package: dev-db/postgresql
     changed_use: yes
   become: true
 

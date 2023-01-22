@@ -26,6 +26,6 @@
   become: true
 
 - name: install 389-ds-base package
-  ansible.builtin.package:
-    name: net-nds/389-ds-base
+  expeditioneer.gentoo.portage:
+    package: net-nds/389-ds-base
   become: true

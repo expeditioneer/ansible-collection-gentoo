@@ -1,13 +1,12 @@
 ---
 
 - name: GUI administration and development platform for PostgreSQL - install packages for technical user and group
-  ansible.builtin.package:
-    name: '{{ item }}'
+  expeditioneer.gentoo.portage:
+    package:
+      - acct-group/www-pgadmin4
+      - acct-user/www-pgadmin4
     changed_use: yes
   become: true
-  loop:
-    - acct-group/www-pgadmin4
-    - acct-user/www-pgadmin4
 
 - name: GUI administration and development platform for PostgreSQL - add technical user to group uwsgi
   ansible.builtin.user:
