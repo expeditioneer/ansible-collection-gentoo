@@ -1,16 +1,13 @@
 ---
 
-- name: Create overlay directory
+- name: Ensure /var/db/repos/expeditioneer directory exists
   ansible.builtin.file:
-    path: '{{ item }}'
+    path: /var/db/repos/expeditioneer
     state: directory
     owner: root
     group: root
     mode: 0755
   become: true
-  loop:
-    - /etc/portage/repos.conf
-    - /var/db/repos/expeditioneer
 
 - name: Install git
   expeditioneer.gentoo.portage:

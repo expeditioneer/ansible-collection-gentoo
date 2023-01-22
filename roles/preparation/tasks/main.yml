@@ -5,3 +5,12 @@
     path: /etc/portage/package.accept_keywords
     state: directory
   become: true
+
+- name: Ensure /etc/portage/repos.conf directory exists
+  ansible.builtin.file:
+    path: /etc/portage/repos.conf
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  become: true
