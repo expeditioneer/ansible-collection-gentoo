@@ -1,7 +1,7 @@
 ---
 
 - name: Create overlay directory
-  file:
+  ansible.builtin.file:
     path: '{{ item }}'
     state: directory
     owner: root
@@ -13,13 +13,12 @@
     - /var/db/repos/expeditioneer
 
 - name: Install git
-  package:
-    name:
-      - dev-vcs/git
+  expeditioneer.gentoo.portage:
+    package: dev-vcs/git
   become: true
 
 - name: Add required expeditioneer overlay
-  template:
+  ansible.builtin.template:
     src: expeditioneer-overlay.j2
     dest: /etc/portage/repos.conf/expeditioneer.conf
     owner: root
@@ -28,7 +27,7 @@
   become: true
   register: expeditioneer_overlay
 
-- name: sync all portage overlays
-  command: eix-sync
+- name: sync all portage repositories
+  ansible.builtin.command: emaint --all sync
   become: true
   when: expeditioneer_overlay.changed

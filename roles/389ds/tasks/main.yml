@@ -25,8 +25,7 @@
     mode: 0644
   become: true
 
-- name: install openldap package
+- name: install 389-ds-base package
   ansible.builtin.package:
     name: net-nds/389-ds-base
   become: true
-

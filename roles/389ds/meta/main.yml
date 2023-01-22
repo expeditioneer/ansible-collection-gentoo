@@ -1,0 +1,4 @@
+---
+
+dependencies:
+  - role: expeditioneer.gentoo.expeditioneer_overlay
