@@ -1,8 +1,8 @@
 ---
 
 - name: install programmable completion for bash
-  ansible.builtin.package:
-    name: app-shells/bash-completion
+  expeditioneer.gentoo.portage:
+    package: app-shells/bash-completion
   become: true
 
 # TODO: other needed packages
