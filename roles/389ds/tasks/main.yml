@@ -1,5 +1,12 @@
 ---
 
+# TODO: migrate to own variable
+- name: assert that mandatory variables are defined
+  ansible.builtin.assert:
+    that:
+      - domain is defined
+      - dirsrv_rootpw is defined
+
 - name: Add keywords for 389-ds required packages
   ansible.builtin.template:
     src: 389-ds.accept_keywords.j2
@@ -18,7 +25,47 @@
     mode: 0644
   become: true
 
-- name: install 389-ds-base package
+- name: Install 389-ds-base package
   expeditioneer.gentoo.portage:
     package: net-nds/389-ds-base
   become: true
+
+- name: Create 389-ds configuration template
+  ansible.builtin.template:
+    src: template.inf.j2
+    dest: /etc/dirsrv/template.inf
+    owner: root
+    group: root
+    mode: 0640
+  become: true
+
+- name: Create localhost instance of Directory Server
+  ansible.builtin.command:
+    cmd: /usr/lib/python{{ ansible_python['version']['major'] }}.{{ ansible_python['version']['minor'] }}/site-packages/usr/sbin/dscreate from-file /etc/dirsrv/template.inf
+    creates: /etc/dirsrv/slapd-localhost/
+  become: true
+
+- name: Set up Directory Manager credentials
+  ansible.builtin.template:
+    src: dsrc.j2
+    dest: /root/.dsrc
+    owner: root
+    group: root
+    mode: 0640
+  become: true
+
+# TODO: create certificates, and restart dirsrv@localhost.service
+# /etc/dirsrv/slapd-localhost/ca.crt + hash of certificate with symlink
+# /etc/dirsrv/slapd-localhost/Server-Cert.crt + hash of certificate with symlink
+# /etc/dirsrv/slapd-localhost/Server-Cert.csr (?)
+
+- name: Allow ldap(s) through firewall
+  ansible.posix.firewalld:
+    service: '{{ item }}'
+    immediate: yes
+    permanent: yes
+    state: enabled
+  become: true
+  with_items:
+    - ldap
+    - ldaps

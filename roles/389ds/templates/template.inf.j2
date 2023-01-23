@@ -1,0 +1,12 @@
+;
+; {{ ansible_managed }}
+;
+
+[general]
+full_machine_name = ldap.home.arpa
+
+[slapd]
+root_password = {{ dirsrv_rootpw }}
+
+[backend-userroot]
+suffix = dc={{ domain | lower | split('.') | join(',dc=') }}
