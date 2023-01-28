@@ -15,6 +15,12 @@
     package: sys-kernel/dracut
   become: true
 
+- name: remove /etc/dracut.conf file
+  ansible.builtin.file:
+    name: /etc/dracut.conf
+    state: absent
+  become: true
+
 - name: 'Create {{ dracut_split_configuration_dir }} directory'
   ansible.builtin.file:
     path: '{{ dracut_split_configuration_dir }}'
@@ -23,7 +29,6 @@
     group: root
     mode: 0755
 
-# TODO: compression should be arch dependend set (x86 -> lz4, aarch64 -> lzo
 - name: Create split configuration files
   ansible.builtin.template:
     src: 'conf.d/{{ item }}'
@@ -36,3 +41,15 @@
     - btrfs.conf.j2
     - compression.conf.j2
     - hostonly.conf.j2
+
+- name: Create x86_64 architecture dependent split configuration files
+  ansible.builtin.template:
+    src: 'conf.d/{{ item }}'
+    dest: "{{ dracut_split_configuration_dir }}/{{ item | replace('.j2', '') }}"
+    owner: root
+    group: root
+    mode: 0640
+  become: true
+  when: ansible_architecture == "x86_64"
+  loop:
+    - microcode.conf.j2
