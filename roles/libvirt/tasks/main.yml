@@ -14,6 +14,15 @@
     package: app-emulation/libvirt
   become: true
 
+- name: load kvm module during boot
+  ansible.builtin.template:
+    src: libvirt.modules.load.conf.j2
+    dest: /etc/modules-load.d/libvirt.conf
+    owner: root
+    group: root
+    mode: 0640
+  become: true
+
 - name: Enable and start libvirtd
   ansible.builtin.systemd:
     name: libvirtd
