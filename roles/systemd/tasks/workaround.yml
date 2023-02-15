@@ -1,0 +1,25 @@
+---
+
+- name: '[WORKAROUND] Create portage patches directory for sys-apps/systemd'
+  ansible.builtin.file:
+    path: /etc/portage/patches/sys-apps/systemd
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  become: true
+
+- name: '[WORKAROUND] copy line continuation patch'
+  ansible.builtin.copy:
+    src: add-missing-line-continuation.patch
+    dest: /etc/portage/patches/sys-apps/systemd/add-missing-line-continuation.patch
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+- name: '[WORKAROUND] re-install sys-apps/systemd'
+  expeditioneer.gentoo.portage:
+    package: sys-apps/systemd
+    update: yes
+  become: true

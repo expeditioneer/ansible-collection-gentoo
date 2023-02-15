@@ -4,6 +4,8 @@
   ansible.builtin.assert:
     that: ansible_service_mgr == 'systemd'
 
+- ansible.builtin.import_tasks: workaround.yml
+
 - ansible.builtin.import_tasks: networkd.yml
 
 - ansible.builtin.import_tasks: timesyncd.yml
