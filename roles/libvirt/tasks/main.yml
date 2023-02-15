@@ -9,6 +9,11 @@
     mode: 0644
   become: true
 
+- name: Install Libtpms-based TPM emulator
+  expeditioneer.gentoo.portage:
+    package: app-crypt/swtpm
+  become: true
+
 - name: Install C toolkit to manipulate virtual machines
   expeditioneer.gentoo.portage:
     package: app-emulation/libvirt
