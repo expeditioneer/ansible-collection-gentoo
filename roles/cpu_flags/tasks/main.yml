@@ -1,0 +1,22 @@
+---
+
+- name: Install package to detect CPU_FLAGS_* flags for the host
+  expeditioneer.gentoo.portage:
+    package: app-portage/cpuid2cpuflags
+  become: true
+
+- name: Detect CPU_FLAGS for the host
+  ansible.builtin.command:
+    cmd: cpuid2cpuflags
+  changed_when: false
+  check_mode: no
+  register: cpuid2cpuflags
+
+- name: Configure use-flags
+  ansible.builtin.template:
+    src: cpu.useflags.j2
+    dest: /etc/portage/package.use/00-cpu-flags
+    owner: root
+    group: root
+    mode: 0644
+  become: true
