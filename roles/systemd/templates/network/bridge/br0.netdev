@@ -1,7 +1,0 @@
-#
-# {{ ansible_managed }}
-#
-
-[NetDev]
-Name=br0
-Kind=bridge
