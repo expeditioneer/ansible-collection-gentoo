@@ -4,5 +4,6 @@
 
 [Resolve]
 DNS={{ dns.server | default(ansible_facts['default_ipv4']['gateway']) }}
+FallbackDNS=
 DNSSEC=no
 Domains={{ dns.domain }}
