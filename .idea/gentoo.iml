@@ -44,6 +44,7 @@
         <option value="$MODULE_DIR$/roles/389ds/templates" />
         <option value="$MODULE_DIR$/roles/preparation/templates" />
         <option value="$MODULE_DIR$/roles/expeditioneer_overlay/templates" />
+        <option value="$MODULE_DIR$/roles/selinux/templates" />
       </list>
     </option>
   </component>
