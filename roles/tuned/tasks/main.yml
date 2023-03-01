@@ -23,6 +23,12 @@
     mode: 0644
   become: true
 
+- name: Install requirements for tuned
+  expeditioneer.gentoo.portage:
+    package:
+      - sys-apps/hdparm
+      - sys-apps/linux-misc-apps
+
 - name: Install daemon for monitoring and adaptive tuning of system devices
   expeditioneer.gentoo.portage:
     package:
