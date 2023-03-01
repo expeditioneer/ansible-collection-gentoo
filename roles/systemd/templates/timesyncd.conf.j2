@@ -3,4 +3,5 @@
 #
 
 [Time]
-NTP={{  timeservers | join(' ') }}
+NTP={{ ansible_facts['default_ipv4']['gateway'] }}
+FallbackNTP=

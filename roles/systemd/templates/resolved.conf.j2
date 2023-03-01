@@ -3,6 +3,6 @@
 #
 
 [Resolve]
-DNS={{ dns.server }}
+DNS={{ dns.server | default(ansible_facts['default_ipv4']['gateway']) }}
 DNSSEC=no
 Domains={{ dns.domain }}

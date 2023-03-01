@@ -1,13 +1,5 @@
 ---
 
-# TODO: set current NTP as FallbackNTP and use subnet NTP as main source
-# TODO: also use split configuration files
-
-- name: Check that mandatory variables are defined
-  ansible.builtin.assert:
-    that:
-      - timeservers is defined
-
 - name: Create timesyncd.conf
   ansible.builtin.template:
     src: timesyncd.conf.j2

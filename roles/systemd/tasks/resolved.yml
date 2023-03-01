@@ -1,12 +1,5 @@
 ---
 
-- name: Check that mandatory variables are defined
-  ansible.builtin.assert:
-    that:
-      - dns is defined
-      - dns.domain is defined
-      - dns.server is defined
-
 - name: Create resolved.conf
   ansible.builtin.template:
     src: resolved.conf.j2
