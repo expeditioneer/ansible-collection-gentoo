@@ -38,8 +38,14 @@
     group: root
     mode: 0640
   become: true
-  notify:
-    - restart firewalld.service
+  register: node_exporter_firewalld_service
+
+- name: Reload firewalld service when node-exporter service changed
+  ansible.builtin.systemd:
+    name: firewalld
+    state: reloaded
+  become: true
+  when: node_exporter_firewalld_service.changed
 
 - name: Allow node-exporter through firewall
   ansible.posix.firewalld:
