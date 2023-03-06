@@ -11,6 +11,12 @@
       - esphome_run_directory is defined
       - nginx_configuration_directory is defined
 
+- name: Install Stupid content tracker; distributed VCS designed for speed and efficiency
+  expeditioneer.gentoo.portage:
+    package: dev-vcs/git
+    update: yes
+  become: true
+
 - name: Create service user esphome
   ansible.builtin.user:
     name: esphome
