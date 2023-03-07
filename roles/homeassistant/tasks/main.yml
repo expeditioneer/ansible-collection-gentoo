@@ -44,6 +44,12 @@
     state: present
   become: true
 
+- name: Install required virtualenv package
+  expeditioneer.gentoo.portage:
+    package: dev-python/virtualenv
+    update: yes
+  become: true
+
 - name: install homeassistant into a virtualenv, inheriting none of the globally installed modules
   ansible.builtin.pip:
     name: '{{ package }}'
