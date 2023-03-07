@@ -70,7 +70,7 @@
     group: root
     mode: 0644
   become: true
-  notify: restart homeassistant systemd service
+  notify: Restart homeassistant systemd service
 
 - name: Enable and start homeassistant
   ansible.builtin.systemd:
