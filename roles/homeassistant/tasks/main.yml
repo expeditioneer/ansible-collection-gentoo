@@ -15,7 +15,6 @@
     comment: System user; homeassistant
     home: /etc/homeassistant
     system: yes
-    group: homeassistant
     groups:
       - dialout
       - usb
