@@ -112,7 +112,7 @@
   become: true
   notify: restart NGINX
   loop:
-    - { name: '{{ homeassistant_https_certificate_file }}',  mode: '0644', type: crt }
+    - { name: '{{ homeassistant_https_certificate_file }}', mode: '0644', type: crt }
     - { name: '{{ homeassistant_https_key_file }}', mode: '0600', type: key }
   loop_control:
     loop_var: file
