@@ -6,15 +6,15 @@ server {
     listen 80;
     listen [::]:80;
 
-    server_name esphome esphome.home.arpa;
-    return 301 https://esphome.home.arpa$request_uri;
+    server_name {{ ansible_hostname }} {{ ansible_fqdn }};
+    return 301 https://{{ ansible_fqdn }}$request_uri;
 }
 
 server {
     server_name esphome.home.arpa;
 
-    ssl_certificate     /etc/ssl/nginx/esphome.home.arpa.crt;
-    ssl_certificate_key /etc/ssl/nginx/esphome.home.arpa.key;
+    ssl_certificate     /etc/ssl/nginx/{{ ansible_fqdn }}.crt;
+    ssl_certificate_key /etc/ssl/nginx/{{ ansible_fqdn }}.key;
 
     access_log	/var/log/nginx/esphome.access.log;
     error_log	/var/log/nginx/esphome.error.log;
