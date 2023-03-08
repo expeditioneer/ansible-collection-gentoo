@@ -105,15 +105,15 @@
 - name: Update homeassistant HTTPS certificate
   ansible.builtin.copy:
     src: '{{ file.name }}'
-    dest: "/etc/ssl/nginx/{{ file.name | split('/') | last }}"
+    dest: "/etc/ssl/nginx/{{ ansible_fqdn }}.{{ file.type }}"
     owner: root
     group: root
     mode: '{{ file.mode }}'
   become: true
   notify: restart NGINX
   loop:
-    - { name: '{{ homeassistant_https_certificate_file }}',  mode: '0644' }
-    - { name: '{{ homeassistant_https_key_file }}', mode: '0600' }
+    - { name: '{{ homeassistant_https_certificate_file }}',  mode: '0644', type: crt }
+    - { name: '{{ homeassistant_https_key_file }}', mode: '0600', type: key }
   loop_control:
     loop_var: file
   when:
