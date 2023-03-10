@@ -1,0 +1,24 @@
+---
+
+- name: Remove journal.conf file
+  ansible.builtin.file:
+    name: /etc/systemd/journald.conf
+    state: absent
+  become: true
+  notify: Restart systemd-journald systemd service
+
+- name: Create journald.conf.d drop-in directory
+  ansible.builtin.file:
+    path: /etc/systemd/journald.conf.d/
+    setype: syslog_conf_t
+    state: directory
+  become: yes
+
+- name: Create split configuration files
+  ansible.builtin.template:
+    src: 'journald.conf.d/{{ item }}'
+    dest: "/etc/systemd/journald.conf.d/{{ item | replace('.j2', '') }}"
+  become: true
+  notify: Restart systemd-journald systemd service
+  loop:
+    - disable-wall.conf.j2
