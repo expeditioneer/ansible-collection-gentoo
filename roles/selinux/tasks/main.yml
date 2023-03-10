@@ -19,12 +19,3 @@
     mode: 0640
   become: true
   notify: Restart auditd service
-
-- name: Stop and mask Journal Audit Socket
-  ansible.builtin.systemd:
-    name: systemd-journald-audit.socket
-    state: stopped
-    enabled: no
-    masked: true
-  become: true
-  notify: Restart systemd-journald systemd service
