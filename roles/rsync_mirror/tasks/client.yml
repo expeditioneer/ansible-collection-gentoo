@@ -1,0 +1,7 @@
+---
+
+- name: Create repos.conf configuration for gentoo
+  ansible.builtin.template:
+    src: gentoo.portage.repo.conf.j2
+    dest: /etc/portage/repos.conf/gentoo.conf
+  become: true

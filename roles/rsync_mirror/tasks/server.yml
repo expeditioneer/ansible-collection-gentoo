@@ -1,0 +1,42 @@
+---
+
+- name: Create rsync.conf.j2
+  ansible.builtin.template:
+    src: rsyncd.conf.j2
+    dest: /etc/rsyncd.conf
+  become: true
+  notify: Restart rsycd systemd service
+
+- name: Enable and start rsyncd
+  ansible.builtin.systemd:
+    name: rsyncd
+    state: started
+    enabled: yes
+  become: true
+
+- name: Allow rsyncd in firewall
+  ansible.posix.firewalld:
+    service: rsyncd
+    immediate: yes
+    permanent: yes
+    state: enabled
+  become: true
+
+- name: Create systemd service and timer for nightly repository synchronization
+  ansible.builtin.template:
+    src: '{{ item.src }}'
+    dest: '/etc/systemd/system/{{ item.dest }}'
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  loop:
+    - { src: ebuild-repo-sync.systemd.service.j2, dest: ebuild-repo-sync.service }
+    - { src: ebuild-repo-sync.systemd.timer.j2, dest: ebuild-repo-sync.timer }
+
+- name: Enable and start systemd timer for nightly repository synchronization
+  ansible.builtin.systemd:
+    name: ebuild-repo-sync.timer
+    state: started
+    enabled: yes
+  become: true

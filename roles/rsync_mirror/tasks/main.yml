@@ -1,0 +1,12 @@
+---
+
+- name: Assert that mandatory variables are defined
+  ansible.builtin.assert:
+    that:
+      - repo_rsync is defined
+
+- ansible.builtin.include_tasks: server.yml
+  when: repo_rsync == 'server'
+
+- ansible.builtin.include_tasks: client.yml
+  when: repo_rsync == 'client'
