@@ -1,6 +1,6 @@
 ---
 
-- name: assert that mandatory variables are defined
+- name: Assert that mandatory variables are defined
   ansible.builtin.assert:
     that:
       - homeassistant_configuration_dir is defined
@@ -8,6 +8,20 @@
       - homeassistant_log_dir is defined
       - homeassistant_nginx_configuration_dir is defined
       - homeassistant_run_directory is defined
+
+- name: Configure use flags
+  ansible.builtin.template:
+    src: homeassistant.useflags.j2
+    dest: /etc/portage/package.use/60-homeassistant
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+- name: Install PostgreSQL database adapter for Python
+  expeditioneer.gentoo.portage:
+    package: dev-python/psycopg
+  become: true
 
 - name: Create service user homeassistant
   ansible.builtin.user:
