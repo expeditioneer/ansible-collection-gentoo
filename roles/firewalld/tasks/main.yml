@@ -44,3 +44,11 @@
     group: root
     mode: 0755
   become: true
+
+- name: Allow Link-Local Multicast Name Resolution in firewall
+  ansible.posix.firewalld:
+    service: llmnr-udp
+    immediate: yes
+    permanent: yes
+    state: enabled
+  become: true
