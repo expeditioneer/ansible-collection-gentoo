@@ -1,0 +1,5 @@
+---
+
+ltss_required_packages:
+  - dev-db/postgis
+  - dev-db/timescaledb

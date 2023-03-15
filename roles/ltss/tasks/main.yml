@@ -1,0 +1,61 @@
+---
+
+- name: assert that mandatory variables are defined
+  ansible.builtin.assert:
+    that:
+      - ltss_required_packages is defined
+      - postgresql_slot is defined
+
+- name: Add keywords for timescaledb required packages
+  ansible.builtin.template:
+    src: timescaledb.accept_keywords.j2
+    dest: /etc/portage/package.accept_keywords/60-timescaledb
+  become: true
+
+- name: Configure use flags
+  ansible.builtin.template:
+    src: timescaledb.useflags.j2
+    dest: /etc/portage/package.use/60-timescaledb
+  become: true
+
+- name: accept for 'timescaledb' required 'timescale' license
+  expeditioneer.gentoo.license:
+    package: dev-db/timescaledb
+    license: timescale
+  become: true
+
+- name: Create /etc/portage/env directory
+  ansible.builtin.file:
+    path: /etc/portage/env
+    seuser: system_u
+    serole: object_r
+    state: directory
+  become: yes
+
+- name: Create /etc/portage/env/postgres.conf
+  ansible.builtin.template:
+    src: postgres.env.conf.j2
+    dest: /etc/portage/env/postgres.conf
+  become: true
+
+- name: Create /etc/portage/package.env directory
+  ansible.builtin.file:
+    path: /etc/portage/package.env
+    seuser: system_u
+    serole: object_r
+    state: directory
+  become: yes
+
+- name: Create /etc/portage/package.env/postgres.conf
+  ansible.builtin.template:
+    src: package.env.j2
+    dest: /etc/portage/package.env/postgres.conf
+  become: true
+
+- name: Install ltss required packages
+  expeditioneer.gentoo.portage:
+    package:
+      - dev-db/postgis
+      - dev-db/timescaledb
+  become: true
+

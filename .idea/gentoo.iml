@@ -45,6 +45,8 @@
         <option value="$MODULE_DIR$/roles/preparation/templates" />
         <option value="$MODULE_DIR$/roles/expeditioneer_overlay/templates" />
         <option value="$MODULE_DIR$/roles/selinux/templates" />
+        <option value="$MODULE_DIR$/roles/rsync_mirror/templates" />
+        <option value="$MODULE_DIR$/roles/ltss/templates" />
       </list>
     </option>
   </component>
