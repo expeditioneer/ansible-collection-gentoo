@@ -1,0 +1,13 @@
+#
+# {{ ansible_managed }}
+#
+
+[Unit]
+Description=Run Gentoo ebuild repository sync nightly
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,13 @@
+#
+# {{ ansible_managed }}
+#
+
+pid file = /run/rsyncd.pid
+max connections = 5
+use chroot = yes
+uid = nobody
+gid = nobody
+
+[gentoo-portage]
+path=/var/db/repos/gentoo
+comment=Gentoo Ebuild Repository

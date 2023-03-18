@@ -1,0 +1,7 @@
+---
+
+- name: Restart rsycd systemd service
+  ansible.builtin.systemd:
+    name: rsyncd
+    state: restarted
+  become: true

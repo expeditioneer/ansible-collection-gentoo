@@ -1,0 +1,10 @@
+#
+# {{ ansible_managed }}
+#
+
+[Unit]
+Description=Sync all Gentoo ebuild repositories
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/emaint sync --allrepos
