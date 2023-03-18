@@ -6,4 +6,4 @@ zigbee2mqtt_log_dir: /var/log/zigbee2mqtt
 zigbee2mqtt_nginx_configuration_dir: '{{ nginx_configuration_directory }}/zigbee2mqtt'
 zigbee2mqtt_state_dir: /var/lib/zigbee2mqtt
 
-zigbee2mqtt_version: 1.28.0
+zigbee2mqtt_version: 1.30.2
