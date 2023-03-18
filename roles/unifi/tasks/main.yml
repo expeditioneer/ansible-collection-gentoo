@@ -62,6 +62,14 @@
     group: root
     mode: 0640
   become: true
+  register: unifi_firewalld_service
+
+- name: Reload firewalld service when node-exporter service changed
+  ansible.builtin.systemd:
+    name: firewalld
+    state: reloaded
+  become: true
+  when: unifi_firewalld_service.changed
 
 - name: Allow unifi through firewall
   ansible.posix.firewalld:
@@ -70,6 +78,24 @@
     permanent: yes
     state: enabled
   become: true
+
+- name: Update unifi HTTPS certificate
+  ansible.builtin.copy:
+    src: '{{ file.name }}'
+    dest: "/etc/ssl/nginx/{{ file.name | split('/') | last }}"
+    owner: root
+    group: root
+    mode: '{{ file.mode }}'
+  become: true
+  notify: restart NGINX
+  loop:
+    - { name: '{{ unifi_https_certificate_file }}',  mode: '0644' }
+    - { name: '{{ unifi_https_key_file }}', mode: '0600' }
+  loop_control:
+    loop_var: file
+  when:
+    - unifi_https_certificate_file is defined
+    - unifi_https_key_file is defined
 
 - name: Create nginx configuration for unifi
   ansible.builtin.template:
@@ -92,21 +118,3 @@
   notify: restart NGINX
   loop:
     - { src: nginx.unifi.locations.conf.j2, dest: locations.conf }
-
-- name: Update unifi HTTPS certificate
-  ansible.builtin.copy:
-    src: '{{ file.name }}'
-    dest: "/etc/ssl/nginx/{{ file.name | split('/') | last }}"
-    owner: root
-    group: root
-    mode: '{{ file.mode }}'
-  become: true
-  notify: restart NGINX
-  loop:
-    - { name: '{{ unifi_https_certificate_file }}',  mode: '0644' }
-    - { name: '{{ unifi_https_key_file }}', mode: '0600' }
-  loop_control:
-    loop_var: file
-  when:
-    - unifi_https_certificate_file is defined
-    - unifi_https_key_file is defined
