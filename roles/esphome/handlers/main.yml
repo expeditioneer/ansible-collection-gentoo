@@ -2,7 +2,14 @@
 
 - name: Restart esphome dashboard systemd service
   ansible.builtin.systemd:
-    name: esphome
+    name: esphome.service
+    state: restarted
+    daemon_reload: yes
+  become: true
+
+- name: Restart esphome-update systemd timer
+  ansible.builtin.systemd:
+    name: esphome-update.timer
     state: restarted
     daemon_reload: yes
   become: true

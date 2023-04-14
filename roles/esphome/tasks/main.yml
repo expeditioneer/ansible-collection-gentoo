@@ -22,6 +22,7 @@
     name: esphome
     comment: System user; ESPHome Dashboard
     home: '{{ esphome_configuration_dir }}'
+    shell: /sbin/nologin
     system: yes
     groups:
       - dialout
@@ -68,7 +69,7 @@
     update: yes
   become: true
 
-- name: Install esphome into a virtualenv, inheriting none of the globally installed modules
+- name: Install ESPHome into a virtualenv, inheriting none of the globally installed modules
   ansible.builtin.pip:
     name: '{{ package }}'
     virtualenv: '{{ esphome_install_dir }}'
@@ -80,7 +81,7 @@
   loop_control:
     loop_var: package
 
-- name: Create systemd service file for esphome
+- name: Create systemd service file for esphome dashboard
   ansible.builtin.template:
     src: esphome.service.j2
     dest: /etc/systemd/system/esphome.service
@@ -90,14 +91,30 @@
   become: true
   notify: Restart esphome dashboard systemd service
 
+- name: Create required systemd unit files for ESPHome automatic-update
+  ansible.builtin.template:
+    src: '{{ item }}'
+    dest: "/etc/systemd/system/{{ item | replace('.j2', '') }}"
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  notify: Restart esphome-update systemd timer
+  loop:
+    - esphome-update.service.j2
+    - esphome-update.timer.j2
+
 - name: Start and enable esphome dashboard systemd service
   ansible.builtin.systemd:
-    name: esphome
+    name: '{{ item }}'
     state: started
     enabled: yes
   become: true
+  loop:
+    - esphome.service
+    - esphome-update.timer
 
-- name: Create nginx configuration for esphome
+- name: Create nginx configuration for ESPHome
   ansible.builtin.template:
     src: nginx.esphome.conf.j2
     dest: '{{ nginx_configuration_directory }}/esphome.conf'
