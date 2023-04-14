@@ -90,22 +90,9 @@
   become: true
   loop:
     - mosquitto.conf.example
-
-- name: ensure /etc/systemd/system/mosquitto.service.d directory exists
-  ansible.builtin.file:
-    path: /etc/systemd/system/mosquitto.service.d
-    state: directory
-  become: true
-
-- name: Create systemd service override for mosquitto
-  ansible.builtin.template:
-    src: mosquitto.systemd.service.j2
-    dest: /etc/systemd/system/mosquitto.service.d/10-mosquitto.conf
-    owner: root
-    group: root
-    mode: 0644
-  become: true
-  notify: restart systemd mosquitto service
+#    - aclfile.example
+#    - pskfile.example
+#    - pwfile.example
 
 - name: Start and enable mosquitto.service
   ansible.builtin.systemd:
