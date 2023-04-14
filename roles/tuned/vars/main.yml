@@ -1,3 +1,10 @@
 ---
 
 tuned_default_profile: powersave
+
+tuned_required_packages:
+  aarch64:
+    - sys-apps/hdparm
+  x86_64:
+    - sys-apps/hdparm
+    - sys-apps/linux-misc-apps

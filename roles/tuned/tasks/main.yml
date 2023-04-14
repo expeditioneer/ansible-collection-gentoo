@@ -4,6 +4,7 @@
   ansible.builtin.assert:
     that:
       - tuned_default_profile is defined
+      - tuned_required_packages.{{ ansible_architecture }} is defined
 
 - name: Add keywords for tuned required packages
   ansible.builtin.template:
@@ -25,9 +26,8 @@
 
 - name: Install requirements for tuned
   expeditioneer.gentoo.portage:
-    package:
-      - sys-apps/hdparm
-      - sys-apps/linux-misc-apps
+    package: "{{ tuned_required_packages[ansible_architecture] }}"
+  become: true
 
 - name: Install daemon for monitoring and adaptive tuning of system devices
   expeditioneer.gentoo.portage:
