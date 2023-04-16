@@ -6,4 +6,4 @@
 DNS={{ dns.server | default(ansible_facts['default_ipv4']['gateway']) }}
 FallbackDNS=
 DNSSEC=no
-Domains={{ dns.domain }}
+Domains={{ dns.domain | default(ansible_facts['domain']) }}
