@@ -1,8 +1,16 @@
 ---
 
-- name: Restart homeassistant systemd service
+- name: Restart Home Assistant systemd service
   ansible.builtin.systemd:
     name: homeassistant
     state: restarted
     daemon_reload: yes
   become: true
+
+- name: Restart homeassistant-update systemd timer
+  ansible.builtin.systemd:
+    name: homeassistant-update.timer
+    state: restarted
+    daemon_reload: yes
+  become: true
+

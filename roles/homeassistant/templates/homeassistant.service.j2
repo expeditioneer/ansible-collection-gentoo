@@ -8,11 +8,11 @@ After=network-online.target
 
 [Service]
 Type=simple
+ExecStart={{ homeassistant_install_dir }}/bin/hass --config /etc/homeassistant --log-file {{ homeassistant_log_dir }}/homeassistant.log
 User=homeassistant
 Group=homeassistant
-Environment="PATH=/usr/local/homeassistant/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/bin"
-WorkingDirectory=/usr/local/homeassistant
-ExecStart=/usr/local/homeassistant/bin/hass --config /etc/homeassistant --log-file /var/log/homeassistant/homeassistant.log
+Environment="PATH={{ homeassistant_install_dir }}/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/bin"
+WorkingDirectory={{ homeassistant_install_dir }}
 Restart=on-failure
 RestartSec=5s
 

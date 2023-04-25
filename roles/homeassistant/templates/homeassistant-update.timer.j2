@@ -1,0 +1,13 @@
+#
+# {{ ansible_managed }}
+#
+
+[Unit]
+Description=Weekly update for Home Assistant
+
+[Timer]
+OnCalendar=weekly
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,15 @@
+#
+# {{ ansible_managed }}
+#
+
+[Unit]
+Description=Update the Home Assistant installation to the latest available version
+ConsistsOf=homeassistant.service
+
+[Service]
+Type=oneshot
+ExecStart={{ homeassistant_install_dir }}/bin/pip install --upgrade homeassistant
+User=homeassistant
+Group=homeassistant
+Environment="PATH={{ homeassistant_install_dir }}/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/bin"
+WorkingDirectory={{ homeassistant_install_dir }}

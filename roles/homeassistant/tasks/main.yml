@@ -23,7 +23,7 @@
     package: dev-python/psycopg
   become: true
 
-- name: Create service user homeassistant
+- name: Create service user Home Assistant
   ansible.builtin.user:
     name: homeassistant
     comment: System user; homeassistant
@@ -64,7 +64,7 @@
     update: yes
   become: true
 
-- name: install homeassistant into a virtualenv, inheriting none of the globally installed modules
+- name: install Home Assistant into a virtualenv, inheriting none of the globally installed modules
   ansible.builtin.pip:
     name: '{{ package }}'
     virtualenv: '{{ homeassistant_install_dir }}'
@@ -76,7 +76,7 @@
   loop_control:
     loop_var: package
 
-- name: Create systemd service file for homeassistant
+- name: Create systemd service file for Home Assistant
   ansible.builtin.template:
     src: homeassistant.service.j2
     dest: /etc/systemd/system/homeassistant.service
@@ -84,14 +84,30 @@
     group: root
     mode: 0644
   become: true
-  notify: Restart homeassistant systemd service
+  notify: Restart Home Assistant systemd service
 
-- name: Enable and start homeassistant
+- name: Create required systemd unit files for Home Assistant automatic-update
+  ansible.builtin.template:
+    src: '{{ item }}'
+    dest: "/etc/systemd/system/{{ item | replace('.j2', '') }}"
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  notify: Restart homeassistant-update systemd timer
+  loop:
+    - homeassistant-update.service.j2
+    - homeassistant-update.timer.j2
+
+- name: Enable and start Home Assistant
   ansible.builtin.systemd:
-    name: homeassistant
+    name: '{{ item }}'
     state: started
     enabled: yes
   become: true
+  loop:
+    - homeassistant.service
+    - homeassistant-update.timer
 
 - name: Create nginx configuration for homeassistant
   ansible.builtin.template:
@@ -103,7 +119,7 @@
   become: true
   notify: restart NGINX
 
-- name: Create nginx configuration snippets for homeassistant
+- name: Create nginx configuration snippets for Home Assistant
   ansible.builtin.template:
     src: '{{ item.src }}'
     dest: '{{ homeassistant_nginx_configuration_dir }}/{{ item.dest }}'
@@ -116,7 +132,7 @@
     - { src: nginx.homeassistant.upstream.conf.j2, dest: upstream.conf }
     - { src: nginx.homeassistant.locations.conf.j2, dest: locations.conf }
 
-- name: Update homeassistant HTTPS certificate
+- name: Update Home Assistant HTTPS certificate
   ansible.builtin.copy:
     src: '{{ file.name }}'
     dest: "/etc/ssl/nginx/{{ ansible_fqdn }}.{{ file.type }}"
