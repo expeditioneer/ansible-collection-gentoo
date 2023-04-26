@@ -25,6 +25,7 @@
     name: libretuya
     comment: System user; LibreTuya Dashboard
     home: '{{ libretuya_configuration_dir }}'
+    shell: /usr/bin/nologin
     system: yes
     groups:
       - dialout
