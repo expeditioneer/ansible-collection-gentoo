@@ -24,6 +24,13 @@
   become: true
   notify: restart systemd distccd service
 
+- name: Remove package provided systemd service override
+  ansible.builtin.file:
+    name: /etc/systemd/system/distccd.service.d/00gentoo.conf
+    state: absent
+  become: true
+  notify: restart systemd distccd service
+
 - name: Allow distccd through firewall
   ansible.posix.firewalld:
     service: distcc
