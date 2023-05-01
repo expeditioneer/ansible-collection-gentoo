@@ -5,6 +5,7 @@
 [Unit]
 Description=Home Assistant
 After=network-online.target
+PartOf=homeassistant-update.service
 
 [Service]
 Type=simple
