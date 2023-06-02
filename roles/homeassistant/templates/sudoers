@@ -1,0 +1,8 @@
+#
+# {{ ansible_managed }}
+#
+
+%homeassistant ALL= NOPASSWD: /bin/systemctl start homeassistant
+%homeassistant ALL= NOPASSWD: /bin/systemctl stop homeassistant
+%homeassistant ALL= NOPASSWD: /bin/systemctl restart homeassistant
+

@@ -2,7 +2,7 @@
 
 - name: Assert that mandatory variables are defined
   ansible.builtin.assert:
-    that:
+    that:removed avahi dependency
       - homeassistant_configuration_dir is defined
       - homeassistant_install_dir is defined
       - homeassistant_log_dir is defined
@@ -149,3 +149,17 @@
   when:
     - homeassistant_https_certificate_file is defined
     - homeassistant_https_key_file is defined
+
+- name: Create /etc/sudoers.d directory
+  ansible.builtin.file:
+    path: /etc/sudoers.d
+    state: directory
+    mode: 0750
+  become: true
+
+- name: Create sudoers file for Home Assistant
+  ansible.builtin.template:
+    src: sudoers
+    dest: /etc/sudoers.d/10-homeassistant
+    mode: 0640
+  become: true
