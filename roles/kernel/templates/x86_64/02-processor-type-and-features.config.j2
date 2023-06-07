@@ -1,0 +1,20 @@
+# CONFIG_LEGACY_VSYSCALL_XONLY is not set
+CONFIG_LEGACY_VSYSCALL_NONE=y
+CONFIG_PROCESSOR_SELECT=y
+{{ (cpu_vendor == 'AMD') | ternary('', '# ')}}CONFIG_CPU_SUP_AMD{{ (cpu_vendor == 'AMD') | ternary('=y', ' is not set')}}
+{{ (cpu_vendor == 'INTEL') | ternary('', '# ')}}CONFIG_CPU_SUP_INTEL{{ (cpu_vendor == 'INTEL') | ternary('=y', ' is not set')}}
+# CONFIG_CPU_SUP_HYGON is not set
+# CONFIG_CPU_SUP_CENTAUR is not set
+# CONFIG_CPU_SUP_ZHAOXIN is not set
+# CONFIG_AMD_NUMA is not set
+# CONFIG_X86_PMEM_LEGACY is not set
+# CONFIG_X86_EXTENDED_PLATFORM is not set
+# CONFIG_X86_MCELOG_LEGACY is not set
+{{ (cpu_vendor == 'AMD') | ternary('', '# ')}}CONFIG_X86_MCE_AMD{{ (cpu_vendor == 'AMD') | ternary('=y', ' is not set')}}
+{{ (cpu_vendor == 'INTEL') | ternary('', '# ')}}CONFIG_X86_MCE_INTEL{{ (cpu_vendor == 'INTEL') | ternary('=y', ' is not set')}}
+{{ (cpu_vendor == 'AMD') | ternary('', '# ')}}CONFIG_MICROCODE_AMD{{ (cpu_vendor == 'AMD') | ternary('=y', ' is not set')}}
+{{ (cpu_vendor == 'AMD') | ternary('', '# ')}}CONFIG_PERF_EVENTS_AMD_POWER{{ (cpu_vendor == 'AMD') | ternary('=y', ' is not set')}}
+{{ (cpu_vendor == 'AMD') | ternary('', '# ')}}CONFIG_PERF_EVENTS_AMD_UNCORE{{ (cpu_vendor == 'AMD') | ternary('=y', ' is not set')}}
+{{ (cpu_vendor == 'AMD') | ternary('', '# ')}}CONFIG_PERF_EVENTS_AMD_BRS{{ (cpu_vendor == 'AMD') | ternary('=y', ' is not set')}}
+
+

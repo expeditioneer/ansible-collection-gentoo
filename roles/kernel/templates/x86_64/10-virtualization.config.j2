@@ -1,0 +1,3 @@
+{{ (ansible_virtualization_role == 'host') | ternary('', '# ')}}CONFIG_KVM{{ (cpu_vendor == 'host') | ternary('=y', ' is not set')}}
+CONFIG_KVM_XEN=n
+{{ (cpu_vendor == 'AMD') | ternary('', '# ')}}CONFIG_KVM_AMD{{ (cpu_vendor == 'AMD') | ternary('=m', ' is not set')}}
