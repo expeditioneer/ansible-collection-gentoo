@@ -1,8 +1,0 @@
-#
-# {{ ansible_managed }}
-#
-
-upstream libretuya {
-    server unix:{{ libretuya_run_directory }}/libretuya.sock;
-    ip_hash;
-}

@@ -1,0 +1,8 @@
+#
+# {{ ansible_managed }}
+#
+
+upstream libretiny {
+    server unix:{{ libretiny_run_directory }}/libretiny.sock;
+    ip_hash;
+}

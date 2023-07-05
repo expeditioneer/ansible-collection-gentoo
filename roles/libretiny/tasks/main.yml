@@ -1,0 +1,142 @@
+---
+
+#Usage
+#
+#    Install PlatformIO
+#    platformio platform install -f https://github.com/kuba2k2/libretiny
+#    Create a project, build it and upload!
+
+## /usr/local
+# git clone https://github.com/kuba2k2/libretuya-esphome -b platform/libretuya --> verschieben nach /usr/local/libretuya
+#python -m venv /usr/local/libretuya
+#source bin/activate
+#python -m pip install -e .
+#
+#---
+
+- name: assert that mandatory variables are defined
+  ansible.builtin.assert:
+    that:
+      - libretiny_username is defined
+      - libretiny_password is defined
+      - libretiny_configuration_dir is defined
+      - libretiny_install_dir is defined
+      - libretiny_nginx_configuration_dir is defined
+      - libretiny_run_directory is defined
+      - nginx_configuration_directory is defined
+
+- name: Create service user libretiny
+  ansible.builtin.user:
+    name: libretiny
+    comment: System user; LibreTiny Dashboard
+    home: '{{ libretiny_configuration_dir }}'
+    shell: /usr/bin/nologin
+    system: yes
+    groups:
+      - dialout
+      - usb
+  become: true
+
+- name: Create tmpfiles.d libretiny configuration
+  ansible.builtin.template:
+    src: libretiny.tmpfiles.j2
+    dest: /etc/tmpfiles.d/libretiny.conf
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  notify:
+    - Create systemd-tmpfiles for libretiny
+
+- name: Create necessary directories for libretiny
+  ansible.builtin.file:
+    path: '{{ directory.path }}'
+    state: directory
+    owner: "{{ directory.owner | default('libretiny') }}"
+    group: "{{ directory.group | default('libretiny') }}"
+    mode: 0750
+  loop:
+    - { path: '{{ libretiny_configuration_dir }}' }
+    - { path: '{{ libretiny_install_dir }}' }
+    - { path: '{{ libretiny_nginx_configuration_dir }}', owner: nginx, group: nginx }
+  loop_control:
+    loop_var: directory
+
+- name: 'Grant user nginx read access to directory {{ libretiny_install_dir }}'
+  ansible.posix.acl:
+    path: '{{ libretiny_install_dir }}'
+    entity: nginx
+    etype: user
+    permissions: rx
+    state: present
+  become: true
+
+#- name: Install libretiny into a virtualenv, inheriting none of the globally installed modules
+#  ansible.builtin.pip:
+#    name: '{{ package }}'
+#    virtualenv: '{{ libretiny_install_dir }}'
+#  become: true
+#  become_user: libretiny
+#  loop:
+#    - wheel
+#    - esphome
+#  loop_control:
+#    loop_var: package
+
+- name: Create systemd service file for libretiny
+  ansible.builtin.template:
+    src: libretiny.service.j2
+    dest: /etc/systemd/system/libretiny.service
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  notify: Restart libretiny dashboard systemd service
+
+- name: Start and enable libretiny dashboard systemd service
+  ansible.builtin.systemd:
+    name: libretiny
+    state: started
+    enabled: yes
+  become: true
+
+- name: Create nginx configuration for libretiny
+  ansible.builtin.template:
+    src: nginx.libretiny.conf.j2
+    dest: '{{ nginx_configuration_directory }}/libretiny.conf'
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  notify: restart NGINX
+
+- name: Create nginx configuration snippets for libretiny
+  ansible.builtin.template:
+    src: '{{ item.src }}'
+    dest: '{{ libretiny_nginx_configuration_dir }}/{{ item.dest }}'
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  notify: restart NGINX
+  loop:
+    - { src: nginx.libretiny.upstream.conf.j2, dest: upstream.conf }
+    - { src: nginx.libretiny.locations.conf.j2, dest: locations.conf }
+
+- name: Update libretiny HTTPS certificate
+  ansible.builtin.copy:
+    src: '{{ file.name }}'
+    dest: "/etc/ssl/nginx/{{ ansible_fqdn }}.{{ file.type }}"
+    owner: root
+    group: root
+    mode: '{{ file.mode }}'
+  become: true
+  notify: restart NGINX
+  loop:
+    - { name: '{{ libretiny_https_certificate_file }}', mode: '0644', type: crt }
+    - { name: '{{ libretiny_https_key_file }}', mode: '0600', type: key }
+  loop_control:
+    loop_var: file
+  when:
+    - libretiny_https_certificate_file is defined
+    - libretiny_https_key_file is defined

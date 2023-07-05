@@ -1,0 +1,19 @@
+#
+# {{ ansible_managed }}
+#
+
+[Unit]
+Description=LibreTiny Dashboard
+After=network-online.target
+
+[Service]
+Type=simple
+User=libretiny
+Group=libretiny
+Environment="ESPHOME_DASHBOARD_USE_PING=true"
+Environment="PATH={{ libretiny_install_dir }}/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+WorkingDirectory={{ libretiny_install_dir }}
+ExecStart={{ libretiny_install_dir }}/bin/esphome dashboard --socket {{ libretiny_run_directory }}/libretiny.sock --username {{ libretiny_username }} --password {{ libretiny_password }} {{ libretiny_configuration_dir }}
+
+[Install]
+WantedBy=multi-user.target

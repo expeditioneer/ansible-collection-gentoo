@@ -20,7 +20,7 @@ server {
     error_log	/var/log/nginx/{{ ansible_hostname }}.error.log;
 
     include /etc/nginx/include/ssl_settings.conf;
-    include {{ libretuya_nginx_configuration_dir }}/locations.conf;
+    include {{ libretiny_nginx_configuration_dir }}/locations.conf;
 }
 
-include {{ libretuya_nginx_configuration_dir }}/upstream.conf;
+include {{ libretiny_nginx_configuration_dir }}/upstream.conf;

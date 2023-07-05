@@ -1,0 +1,6 @@
+---
+
+libretiny_configuration_dir: /etc/libretiny
+libretiny_install_dir: /usr/local/libretiny
+libretiny_nginx_configuration_dir: '{{ nginx_configuration_directory }}/libretiny'
+libretiny_run_directory: /run/libretiny

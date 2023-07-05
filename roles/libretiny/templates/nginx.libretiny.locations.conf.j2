@@ -3,7 +3,7 @@
 #
 
 location / {
-	proxy_pass http://libretuya;
+	proxy_pass http://libretiny;
 
 	proxy_redirect off;
 	proxy_http_version 1.1;
@@ -19,5 +19,5 @@ location / {
 }
 
 location /static {
-	alias {{ libretuya_install_dir }}/lib/python{{ ansible_python['version']['major'] }}.{{ ansible_python['version']['minor'] }}/site-packages/esphome_dashboard/static;
+	alias {{ libretiny_install_dir }}/lib/python{{ ansible_python['version']['major'] }}.{{ ansible_python['version']['minor'] }}/site-packages/esphome_dashboard/static;
 }
