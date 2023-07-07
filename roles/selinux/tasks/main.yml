@@ -10,7 +10,7 @@
 - name: Create auditd.conf configuration
   ansible.builtin.template:
     src: auditd.conf.j2
-    dest: /etc/audit/
+    dest: /etc/audit/auditd.conf
     owner: root
     group: root
     seuser: system_u
@@ -19,3 +19,9 @@
     mode: 0640
   become: true
   notify: Restart auditd service
+
+- name: Remove wrong file with extension 'auditd.conf.j2' file
+  ansible.builtin.file:
+    name: /etc/audit/auditd.conf.j2
+    state: absent
+  become: true
