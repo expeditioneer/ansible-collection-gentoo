@@ -1,0 +1,7 @@
+[Match]
+Name=enp1s0
+
+[Network]
+DHCP=yes
+MulticastDNS=true
+LLMNR=false

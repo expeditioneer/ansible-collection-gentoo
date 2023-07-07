@@ -12,7 +12,7 @@
     path: /etc/systemd/journald.conf.d/
     setype: syslog_conf_t
     state: directory
-  become: yes
+  become: true
 
 - name: Create split configuration files
   ansible.builtin.template:
