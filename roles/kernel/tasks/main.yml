@@ -1,55 +1,9 @@
 ---
 
 # TODO: transition to gentoo-kernel for all system categories
-#     - VMs
 #     - RaspberryPI
 #     - Desktop(?)
 
-- name: Assert that mandatory variables are defined
-  ansible.builtin.assert:
-    that:
-      - distribution_kernel_configuration_directory is defined
+- ansible.builtin.include_tasks: post-installation-hooks.yml
 
-- name: Ensure {{ distribution_kernel_configuration_directory }} directory exists
-  ansible.builtin.file:
-    path: '{{ distribution_kernel_configuration_directory }}'
-    state: directory
-  become: true
-
-- name: set cpu_vendor fact if CPU is from AMD
-  set_fact:
-    cpu_vendor: AMD
-  when:
-    - "'AMD' in ansible_facts['processor'][1]"
-
-- name: set cpu_vendor fact if CPU is from Intel
-  set_fact:
-    cpu_vendor: INTEL
-  when:
-    - "'Intel' in ansible_facts['processor'][1]"
-
-- name: Assert that cpu_vendor fact is defined
-  ansible.builtin.assert:
-    that:
-      - cpu_vendor is defined
-
-- name: Create {{ ansible_architecture }} architecture specific kernel configuration snippets
-  template:
-    src: "{{ item }}"
-    dest: "{{ distribution_kernel_configuration_directory }}/{{ item | basename | replace('.j2', '') }}"
-  with_fileglob:
-    - ../templates/{{ ansible_architecture }}/*.j2
-
-- name: Create KVM {{ ansible_virtualization_role }} specific kernel configuration snippets
-  template:
-    src: "{{ item }}"
-    dest: "{{ distribution_kernel_configuration_directory }}/{{ item | basename | replace('.j2', '') }}"
-  with_fileglob:
-    - ../templates/{{ ansible_architecture }}/kvm_guest/*.j2
-  when:
-    - ansible_virtualization_role == 'guest'
-
-- name: Install Linux kernel built with Gentoo patches
-  expeditioneer.gentoo.portage:
-    package: sys-kernel/gentoo-kernel
-  become: true
+- ansible.builtin.include_tasks: configuration.yml

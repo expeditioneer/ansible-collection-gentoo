@@ -1,3 +1,9 @@
 ---
 
-distribution_kernel_configuration_directory: /etc/kernel/config.d
+gentoo_kernel_efi_directory: /boot/EFI/Gentoo
+
+kernel_configuration_directory: /etc/kernel
+kernel_post_installation_hook_directory: /etc/kernel/postinst.d
+
+distribution_kernel_configuration_directory: '{{ kernel_configuration_directory }}/config.d'
+

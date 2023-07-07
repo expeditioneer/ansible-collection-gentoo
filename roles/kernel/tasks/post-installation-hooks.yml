@@ -1,0 +1,15 @@
+---
+
+- name: Assert that mandatory variables are defined
+  ansible.builtin.assert:
+    that:
+      - gentoo_kernel_efi_directory is defined
+
+- name: Create kernel post installation hook scripts
+  template:
+    src: "{{ item }}"
+    dest: "{{ kernel_post_installation_hook_directory }}/{{ item | basename | replace('.j2', '') }}"
+    seuser: system_u
+    mode: 0755
+  with_fileglob:
+    - ../templates/postinst.d/*.j2

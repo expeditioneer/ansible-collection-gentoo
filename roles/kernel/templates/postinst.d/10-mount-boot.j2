@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+#
+# {{ ansible_managed }}
+#
+
+set -e
+
+if ! mount | grep -q 'on /boot type' ; then
+  mount /boot
+fi
