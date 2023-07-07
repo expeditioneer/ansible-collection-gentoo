@@ -14,5 +14,12 @@
     expeditioneer.gentoo.portage:
       package: sys-boot/refind
     become: true
+
+  - name: Remove unnecessary refind_linux.conf file
+    ansible.builtin.file:
+      path: /boot/refind_linux.conf
+      state: absent
+    become: true
+
   when:
     - ansible_architecture == "x86_64"
