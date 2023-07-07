@@ -7,21 +7,12 @@
       - mosquitto_run_dir is defined
       - mosquitto_split_configuration_dir is defined
 
-- name: Add keywords for MQTT required packages
-  ansible.builtin.template:
-    src: mqtt.accept_keywords.j2
-    dest: /etc/portage/package.accept_keywords/60-mqtt
-    owner: root
-    group: root
-    mode: 0644
-  become: true
-
 - name: Install Open Source MQTT v3 Broker
   expeditioneer.gentoo.portage:
     package: app-misc/mosquitto
   become: true
 
-- name: Create missing tmpfiles.d mongodb configuration
+- name: Create missing tmpfiles.d mosquitto configuration
   ansible.builtin.template:
     src: mosquitto.tmpfiles.conf.j2
     dest: /etc/tmpfiles.d/mosquitto.conf
@@ -47,7 +38,7 @@
     group: mosquitto
     mode: 0640
   become: true
-  notify: restart systemd mosquitto service
+  notify: Restart mosquitto service
 
 - name: 'ensure {{ mosquitto_split_configuration_dir }} directory exists'
   ansible.builtin.file:
@@ -66,7 +57,7 @@
     group: mosquitto
     mode: 0640
   become: true
-  notify: restart systemd mosquitto service
+  notify: Restart mosquitto service
   loop:
     - 01-general.conf.j2
     - 02-listeners.conf.j2
@@ -81,7 +72,7 @@
     group: mosquitto
     mode: 0640
   become: true
-  notify: restart systemd mosquitto service
+  notify: Restart mosquitto service
 
 - name: remove obsolete configuration files
   ansible.builtin.file:
