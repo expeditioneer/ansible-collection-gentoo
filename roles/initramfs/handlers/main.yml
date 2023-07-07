@@ -3,4 +3,4 @@
 - name: recreate initramfs
   ansible.builtin.shell:
     cmd: dracut --force
-  become: yes
+  become: true
