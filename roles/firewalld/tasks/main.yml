@@ -19,7 +19,7 @@
     package: net-firewall/firewalld
   become: true
 
-- name: Start and enable firewalld.service
+- name: Start and enable firewalld service
   ansible.builtin.systemd:
     name: firewalld
     state: started
