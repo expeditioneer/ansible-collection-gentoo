@@ -30,7 +30,7 @@
     seuser: system_u
     serole: object_r
     state: directory
-  become: yes
+  become: true
 
 - name: Create /etc/portage/env/postgres.conf
   ansible.builtin.template:
@@ -44,7 +44,7 @@
     seuser: system_u
     serole: object_r
     state: directory
-  become: yes
+  become: true
 
 - name: Create /etc/portage/package.env/postgres.conf
   ansible.builtin.template:
