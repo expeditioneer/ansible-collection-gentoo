@@ -2,7 +2,7 @@
 
 - name: Assert that mandatory variables are defined
   ansible.builtin.assert:
-    that:removed avahi dependency
+    that:
       - homeassistant_configuration_dir is defined
       - homeassistant_install_dir is defined
       - homeassistant_log_dir is defined
